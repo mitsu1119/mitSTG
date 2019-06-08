@@ -1,6 +1,18 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, EnemyIMGDataBase *enemyImages): player(player), keyDirection(CENTER), counter(0) {
+Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages): player(player), keyDirection(CENTER), counter(0) {
+	std::fstream ifs(stagePath);
+	if(ifs.fail()) return;
+
+	std::string buf;
+	std::vector<std::string> parsed;
+	auto enemImages = enemyImages;
+	getline(ifs, buf);		// skip one line
+	while(getline(ifs, buf)) {
+		parsed = split_str(buf, ',');
+		stage.emplace_back(enemImages[parsed[0]], std::stoi(parsed[1]));
+	}
+	ifs.close();
 }
 
 void Game::checkKey() {

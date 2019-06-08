@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, IMG *image): point(p), speed(speed), image(image) {
+Character::Character(Point p, double speed, const IMG *image): point(p), speed(speed), image(image) {
 }
 
 void Character::info() {
@@ -14,7 +14,7 @@ void Character::draw() {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, IMG *image) : Character(Point(initPx, initPy), speed, image) {
+Player::Player(double initPx, double initPy, double speed, const IMG *image) : Character(Point(initPx, initPy), speed, image) {
 }
 
 void Player::move(Direction dir) {
@@ -25,7 +25,7 @@ void Player::move(Direction dir) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, IMG *image): Character(Point(initPx, initPy), speed, image) {
+Enemy::Enemy(double initPx, double initPy, double speed, const IMG *image): Character(Point(initPx, initPy), speed, image) {
 }
 
 void Enemy::move(Direction dir) {

@@ -31,9 +31,8 @@ private:
 public:
 	IMG(const char *path);
 
-	int getSizeX();
-	int getSizeY();
-	int getHandle();
+	int getSizeX() const;
+	int getSizeY() const;
+	int getHandle() const;
 };
-typedef std::vector<IMG *> IMGDataBase;
-typedef std::unordered_map<std::string, IMG *> EnemyIMGDataBase;
+typedef std::unordered_map<std::string, const IMG *> IMGDataBase;

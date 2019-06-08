@@ -1,11 +1,15 @@
 #pragma once
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
+#include <unordered_map>
 #include "STG.h"
 
 class Game {
 private:
 	Player *player;
+	Stage stage;
 	Direction keyDirection;
 	int counter;
 
@@ -13,7 +17,7 @@ private:
 	void checkKey();
 
 public:
-	Game(Player *player, const char *stagePath, EnemyIMGDataBase *enemyImages);
+	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages);
 
 	void mainLoop();
 	void playerKeyProcessing();

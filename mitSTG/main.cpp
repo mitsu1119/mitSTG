@@ -7,7 +7,7 @@
 #include "util.h"
 
 IMGDataBase playerImages;
-EnemyIMGDataBase enemyImages;
+IMGDataBase enemyImages;
 int loading();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -21,9 +21,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Point WndCenter(((double)rect.right - (double)rect.left) / 2.0, ((double)rect.bottom - (double)rect.top) / 2.0);
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages[0]);
+	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages["redBox"]);
 	Enemy enemy(WndCenter.getX(), 100.0, 5.0, enemyImages["yellowBox"]);
-	Game game(&player, "dat\\stage\\stage1.csv", &enemyImages);
+	Game game(&player, "dat\\stage\\stage1.csv", enemyImages);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}
@@ -34,16 +34,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 int loading() {
 	std::string buf;
+	std::vector<std::string> parsed;
 	// --------------------------------------------- Loading Database ---------------------------------------------------------
 	// player images
 	std::ifstream ifs("dat\\database\\playerImages.csv");
 	if(ifs.fail()) return -1;	
 	getline(ifs, buf);		// skip one line
-	while(getline(ifs, buf)) playerImages.push_back(new IMG(("dat\\image\\player\\" + buf).c_str()));
+	while(getline(ifs, buf)) {
+		parsed = split_str(buf, ',');
+		playerImages[parsed[1]] = new IMG(("dat\\image\\player\\" + parsed[0]).c_str());
+	}
 	ifs.close();
 
 	// enemy images
-	std::vector<std::string> parsed;
 	ifs.open("dat\\database\\enemyImages.csv");
 	if(ifs.fail()) return -1;
 	getline(ifs, buf);		// skip one line

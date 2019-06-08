@@ -9,12 +9,18 @@
 #include "util.h"
 #include "DxLib.h"
 
+// stage[0][STG_ENEMYIMG] => 1th enemy's image
+typedef std::vector<std::tuple<const IMG *, int>> Stage;
+enum StageAccessing {
+	STG_ENEMYIMG, STG_TIMING
+};
+
 class Character {
 protected:
-	Character(Point p, double speed, IMG *image);
+	Character(Point p, double speed, const IMG *mage);
 	
 	Point point;
-	IMG *image;
+	const IMG *image;
 	double speed;
 
 public:
@@ -25,14 +31,14 @@ public:
 
 class Player: public Character {
 public:
-	Player(double initPx, double initPy, double speed, IMG *image);
+	Player(double initPx, double initPy, double speed, const IMG *image);
 
 	virtual void move(Direction dir);
 };
 
 class Enemy: public Character {
 public:
-	Enemy(double initPx, double initPy, double speed, IMG *image);
+	Enemy(double initPx, double initPy, double speed, const IMG *image);
 
 	virtual void move(Direction dir);
 };
