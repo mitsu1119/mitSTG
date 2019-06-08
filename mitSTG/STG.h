@@ -14,6 +14,7 @@ protected:
 
 public:
 	virtual void move(Direction dir) = 0;
+	void info();		// for debug
 	void draw();
 };
 
@@ -21,6 +22,12 @@ class Player: public Character {
 public:
 	Player(double initPx, double initPy, double speed, IMG *image);
 
-	void info();	// for debug
+	virtual void move(Direction dir);
+};
+
+class Enemy: public Character {
+public:
+	Enemy(double initPx, double initPy, double speed, IMG *image);
+
 	virtual void move(Direction dir);
 };

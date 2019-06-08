@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player): player(player), keyDirection(CENTER) {
+Game::Game(Player *player): player(player), keyDirection(CENTER), counter(0) {
 }
 
 void Game::checkKey() {
@@ -27,6 +27,7 @@ void Game::playerKeyProcessing() {
 
 void Game::mainLoop() {
 	ClearDrawScreen();
+	counter++;
 	checkKey();
 
 	playerKeyProcessing();

@@ -5,6 +5,7 @@ class Game {
 private:
 	Player *player;
 	Direction keyDirection;
+	int counter;
 
 	// store the key direction entered in keyDirection
 	void checkKey();
