@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 enum Direction {
 	RIGHT, RUP, UP, LUP, LEFT, LDOWN, DOWN, RDOWN, CENTER
@@ -22,7 +23,6 @@ class IMG {
 private:
 	int handle;
 	int sizeX, sizeY;
-	int harfSizeX, harfSizeY;
 
 public:
 	IMG(const char *path);
@@ -31,3 +31,4 @@ public:
 	int getSizeY();
 	int getHandle();
 };
+typedef std::vector<IMG *> IMGDataBase;

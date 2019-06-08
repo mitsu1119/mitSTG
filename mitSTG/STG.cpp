@@ -3,6 +3,10 @@
 // ------------------------- Character class ------------------------------------------
 Character::Character(Point p, double speed, IMG *image): point(p), speed(speed), image(image) {
 }
+
+void Character::draw() {
+	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
+}
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------

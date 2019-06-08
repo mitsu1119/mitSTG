@@ -30,7 +30,7 @@ void Game::mainLoop() {
 	checkKey();
 
 	playerKeyProcessing();
-	player->info();
+	player->draw();
 
 	ScreenFlip();
 }

@@ -29,8 +29,6 @@ void Point::moveY(double dy) {
 IMG::IMG(const char *path) {
 	handle = LoadGraph(path);
 	GetGraphSize(handle, &sizeX, &sizeY);
-	harfSizeX = sizeX / 2;
-	harfSizeY = sizeY / 2;
 }
 
 int IMG::getSizeX() {

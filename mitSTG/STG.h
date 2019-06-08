@@ -14,6 +14,7 @@ protected:
 
 public:
 	virtual void move(Direction dir) = 0;
+	void draw();
 };
 
 class Player: public Character {
