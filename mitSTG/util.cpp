@@ -15,6 +15,14 @@ double Point::getX() {
 double Point::getY() {
 	return y;
 }
+
+void Point::moveX(double dx) {
+	x += dx;
+}
+
+void Point::moveY(double dy) {
+	y += dy;
+}
 // --------------------------------------------------------------------------------------
 
 // ------------------------- IMG class --------------------------------------------------

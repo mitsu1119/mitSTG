@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "STG.h"
+#include "game.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 	ChangeWindowMode(true);
@@ -9,13 +10,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	IMG playerIMG("dat\\image\\player\\player1.png");
-	Player player(100, 100, &playerIMG);
-
-	player.info();
+	Player player(100, 100,  5.0, &playerIMG);
+	
+	Game game(&player);
 	while(ProcessMessage() == 0) {
-		ClearDrawScreen();
-
-		ScreenFlip();
+		game.mainLoop();
 	}
 
 	DxLib_End();

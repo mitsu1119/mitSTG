@@ -1,5 +1,9 @@
 #pragma once
 
+enum Direction {
+	RIGHT, RUP, UP, LUP, LEFT, LDOWN, DOWN, RDOWN, CENTER
+};
+
 class Point {
 private:
 	double x, y;
@@ -10,6 +14,8 @@ public:
 
 	double getX();
 	double getY();
+	void moveX(double dx);
+	void moveY(double dy);
 };
 
 class IMG {

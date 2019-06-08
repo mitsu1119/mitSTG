@@ -1,15 +1,21 @@
 #include "STG.h"
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, IMG *image): point(p), image(image) {
+Character::Character(Point p, double speed, IMG *image): point(p), speed(speed), image(image) {
 }
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, IMG *image) : Character(Point(initPx, initPy), image) {
+Player::Player(double initPx, double initPy, double speed, IMG *image) : Character(Point(initPx, initPy), speed, image) {
 }
 
 void Player::info() {
 	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image->getSizeX(), image->getSizeY());
+}
+
+void Player::move(Direction dir) {
+	if(dir == CENTER) return;
+	point.moveX(speed * cos(dir * M_PI / 4));
+	point.moveY(-1 * speed * sin(dir * M_PI / 4));
 }
 // -------------------------------------------------------------------------------------
