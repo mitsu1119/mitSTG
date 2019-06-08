@@ -1,6 +1,11 @@
 #pragma once
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <tuple>
+#include <unordered_map>
 #include "util.h"
 #include "DxLib.h"
 

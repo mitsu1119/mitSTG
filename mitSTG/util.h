@@ -1,9 +1,13 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
+#include <string>
 
 enum Direction {
 	RIGHT, RUP, UP, LUP, LEFT, LDOWN, DOWN, RDOWN, CENTER
 };
+
+std::vector<std::string> split_str(const std::string &s, char delim);
 
 class Point {
 private:
@@ -32,3 +36,4 @@ public:
 	int getHandle();
 };
 typedef std::vector<IMG *> IMGDataBase;
+typedef std::unordered_map<std::string, IMG *> EnemyIMGDataBase;

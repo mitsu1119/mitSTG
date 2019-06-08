@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player): player(player), keyDirection(CENTER), counter(0) {
+Game::Game(Player *player, const char *stagePath, EnemyIMGDataBase *enemyImages): player(player), keyDirection(CENTER), counter(0) {
 }
 
 void Game::checkKey() {

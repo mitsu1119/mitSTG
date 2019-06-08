@@ -1,6 +1,22 @@
 #include "util.h"
 #include "DxLib.h"
 
+// ------------------------- out of all class --------------------------------------------
+std::vector<std::string> split_str(const std::string &s, char delim) {
+	std::vector<std::string> ret;
+	std::string itm;
+	for(char chr : s) {
+		if(chr == delim) {
+			if(!itm.empty()) ret.emplace_back(itm);
+			itm.clear();
+		} else {
+			itm += chr;
+		}
+	}
+	if(!itm.empty()) ret.emplace_back(itm);
+	return ret;
+}
+
 // ------------------------- Point class ------------------------------------------------
 Point::Point(): x(0), y(0) {
 }

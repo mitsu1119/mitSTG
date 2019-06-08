@@ -7,7 +7,7 @@
 #include "util.h"
 
 IMGDataBase playerImages;
-IMGDataBase enemyImages;
+EnemyIMGDataBase enemyImages;
 int loading();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -22,8 +22,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages[0]);
-	Enemy enemy(WndCenter.getX(), 100.0, 5.0, enemyImages[0]);
-	Game game(&player);
+	Enemy enemy(WndCenter.getX(), 100.0, 5.0, enemyImages["yellowBox"]);
+	Game game(&player, "dat\\stage\\stage1.csv", &enemyImages);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}
@@ -43,10 +43,14 @@ int loading() {
 	ifs.close();
 
 	// enemy images
+	std::vector<std::string> parsed;
 	ifs.open("dat\\database\\enemyImages.csv");
 	if(ifs.fail()) return -1;
 	getline(ifs, buf);		// skip one line
-	while(getline(ifs, buf)) enemyImages.push_back(new IMG(("dat\\image\\enemy\\" + buf).c_str()));
+	while(getline(ifs, buf)) {
+		parsed = split_str(buf, ',');
+		enemyImages[parsed[1]] = new IMG(("dat\\image\\enemy\\" + parsed[0]).c_str());
+	}
 	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------
 

@@ -1,4 +1,6 @@
 #pragma once
+#include <iostream>
+#include <fstream>
 #include "STG.h"
 
 class Game {
@@ -11,7 +13,7 @@ private:
 	void checkKey();
 
 public:
-	Game(Player *player);
+	Game(Player *player, const char *stagePath, EnemyIMGDataBase *enemyImages);
 
 	void mainLoop();
 	void playerKeyProcessing();
