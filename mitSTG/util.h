@@ -17,8 +17,8 @@ public:
 	Point();
 	Point(double x, double y);
 
-	double getX();
-	double getY();
+	double getX() const;
+	double getY() const;
 	void moveX(double dx);
 	void moveY(double dy);
 };

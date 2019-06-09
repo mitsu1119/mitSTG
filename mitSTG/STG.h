@@ -3,16 +3,17 @@
 #include <cmath>
 #include <string>
 #include <fstream>
-#include <vector>
+#include <deque>
 #include <tuple>
 #include <unordered_map>
 #include "util.h"
 #include "DxLib.h"
 
 // stage[0][STG_ENEMYIMG] => 1th enemy's image
-typedef std::vector<std::tuple<const IMG *, int>> Stage;
+typedef std::tuple<const IMG *, double, double, int> StagePart;
+typedef std::vector<StagePart> Stage;
 enum StageAccessing {
-	STG_ENEMYIMG, STG_TIMING
+	STA_ENEMYIMG, STA_INITPX, STA_INITPY, STA_TIMING
 };
 
 class Character {
@@ -25,8 +26,8 @@ protected:
 
 public:
 	virtual void move(Direction dir) = 0;
-	void info();		// for debug
-	void draw();
+	void info() const;		// for debug
+	void draw() const;
 };
 
 class Player: public Character {

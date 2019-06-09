@@ -4,11 +4,11 @@
 Character::Character(Point p, double speed, const IMG *image): point(p), speed(speed), image(image) {
 }
 
-void Character::info() {
+void Character::info() const {
 	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image->getSizeX(), image->getSizeY());
 }
 
-void Character::draw() {
+void Character::draw() const {
 	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
