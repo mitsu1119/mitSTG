@@ -28,7 +28,8 @@ private:
 	void enemyDrawing();
 
 public:
-	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages);
+	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages);
+	~Game();
 
 	void mainLoop();
 };

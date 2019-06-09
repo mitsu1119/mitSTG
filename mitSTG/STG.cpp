@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, const IMG *image): point(p), speed(speed), image(image) {
+Character::Character(Point p, double speed, const IMG *image, const IMG *shotImage): point(p), speed(speed), image(image), shotImage(shotImage) {
 }
 
 void Character::info() const {
@@ -14,7 +14,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, const IMG *image) : Character(Point(initPx, initPy), speed, image) {
+Player::Player(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage) : Character(Point(initPx, initPy), speed, image, shotImage) {
 }
 
 void Player::move(Direction dir) {
@@ -25,9 +25,18 @@ void Player::move(Direction dir) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, const IMG *image): Character(Point(initPx, initPy), speed, image) {
+Enemy::Enemy(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage): Character(Point(initPx, initPy), speed, image, shotImage) {
 }
 
 void Enemy::move(Direction dir) {
+}
+// -------------------------------------------------------------------------------------
+
+// ------------------------ Bullet class ------------------------------------------------
+Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
+}
+
+void Bullet::draw() const {
+	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 
 IMGDataBase playerImages;
 IMGDataBase enemyImages;
+IMGDataBase shotImages;
 int loading();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -21,9 +22,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Point WndCenter(((double)rect.right - (double)rect.left) / 2.0, ((double)rect.bottom - (double)rect.top) / 2.0);
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages["redBox"]);
-	Enemy enemy(WndCenter.getX(), 100.0, 5.0, enemyImages["yellowBox"]);
-	Game game(&player, "dat\\stage\\stage1.csv", enemyImages);
+	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages["redBox"], playerImages["redBox"]);
+	Game game(&player, "dat\\stage\\stage1.csv", enemyImages, shotImages);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}
@@ -53,6 +53,16 @@ int loading() {
 	while(getline(ifs, buf)) {
 		parsed = split_str(buf, ',');
 		enemyImages[parsed[1]] = new IMG(("dat\\image\\enemy\\" + parsed[0]).c_str());
+	}
+	ifs.close();
+
+	// shot images
+	ifs.open("dat\\database\\shotImages.csv");
+	if(ifs.fail()) return -1;
+	getline(ifs, buf);		// skip one line
+	while(getline(ifs, buf)) {
+		parsed = split_str(buf, ',');
+		shotImages[parsed[1]] = new IMG(("dat\\image\\shot\\" + parsed[0]).c_str());
 	}
 	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------
