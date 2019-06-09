@@ -1,7 +1,41 @@
 #include "STG.h"
 
+// ------------------------ Bullet class ------------------------------------------------
+Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
+}
+
+void Bullet::draw() const {
+	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
+}
+// -------------------------------------------------------------------------------------
+
+// ------------------------ Shot class -------------------------------------------------
+Shot::Shot(Bullet bullet): bullet(bullet) {
+}
+
+void Shot::draw() const {
+	bullet.draw();
+}
+// -------------------------------------------------------------------------------------
+
 // ------------------------- Character class ------------------------------------------
 Character::Character(Point p, double speed, const IMG *image, const IMG *shotImage): point(p), speed(speed), image(image), shotImage(shotImage) {
+}
+
+Point Character::getPoint() const {
+	return point;
+}
+
+const IMG *Character::getImage() const {
+	return image;
+}
+
+const IMG *Character::getShotImage() const {
+	return shotImage;
+}
+
+double Character::getSpeed() const {
+	return speed;
 }
 
 void Character::info() const {
@@ -29,14 +63,5 @@ Enemy::Enemy(double initPx, double initPy, double speed, const IMG *image, const
 }
 
 void Enemy::move(Direction dir) {
-}
-// -------------------------------------------------------------------------------------
-
-// ------------------------ Bullet class ------------------------------------------------
-Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
-}
-
-void Bullet::draw() const {
-	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------

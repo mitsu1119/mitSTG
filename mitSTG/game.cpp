@@ -1,8 +1,10 @@
 #include "game.h"
 
 Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages): player(player), keyDirection(CENTER), enemCount(0), counter(0) {
-	enemyPool = std::vector<const Enemy *>(MAX_ENEMY_DISP);
+	enemyPool = std::vector<const Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
+	shotPool = std::vector<const Shot *>(MAX_SHOT_DISP, nullptr);
+	shotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
 	std::fstream ifs(stagePath);
 	if(ifs.fail()) return;
@@ -20,7 +22,12 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 }
 
 Game::~Game() {
-	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) delete enemyPool[i];
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPool[i] != nullptr) delete enemyPool[i];
+	}
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(shotPool[i] != nullptr) delete shotPool[i];
+	}
 }
 
 void Game::checkKey() {
@@ -55,6 +62,20 @@ void Game::playerKeyProcessing() {
 	if(keyDirection != CENTER) player->move(keyDirection);
 }
 
+void Game::enemyShotProcessing() {
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPoolFlags[i] == true) {
+			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
+				if(shotPoolFlags[j] == false) {
+					shotPool[j] = new Shot(Bullet(enemyPool[i]->getPoint(), enemyPool[i]->getShotImage()));
+					shotPoolFlags[j] = true;
+					break;
+				}
+			}
+		}
+	}
+}
+
 void Game::enemyProcessing() {
 	while(true) {
 		if(counter == getNextEnemyTiming()) {
@@ -74,6 +95,14 @@ void Game::enemyProcessing() {
 	}
 }
 
+void Game::enemyShotDrawing() {
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(shotPoolFlags[i] == true) {
+			shotPool[i]->draw();
+		}
+	}
+}
+
 void Game::enemyDrawing() {
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true) {
@@ -89,8 +118,10 @@ void Game::mainLoop() {
 
 	enemyProcessing();
 	playerKeyProcessing();
+	enemyShotProcessing();
 
 	player->draw();
 	enemyDrawing();
+	enemyShotDrawing();
 	ScreenFlip();
 }

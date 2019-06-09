@@ -18,36 +18,6 @@ enum StageAccessing {
 };
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-// --------------------------------------------------------- Character --------------------------------------------------------------
-class Character {
-protected:
-	Character(Point p, double speed, const IMG *mage, const IMG *shotImage);
-	
-	Point point;
-	const IMG *image, *shotImage;
-	double speed;
-
-public:
-	virtual void move(Direction dir) = 0;
-	void info() const;		// for debug
-	void draw() const;
-};
-
-class Player: public Character {
-public:
-	Player(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage);
-
-	virtual void move(Direction dir);
-};
-
-class Enemy: public Character {
-public:
-	Enemy(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage);
-
-	virtual void move(Direction dir);
-};
-// ---------------------------------------------------------------------------------------------------------------------------------
-
 // ---------------------------------------------------------- Shot -----------------------------------------------------------------
 class Bullet {
 private:
@@ -58,5 +28,53 @@ public:
 	Bullet(Point point, const IMG *image);
 
 	void draw() const;
+};
+
+class Shot {
+private:
+	Bullet bullet;
+
+public:
+	Shot(Bullet bullet);
+
+	void draw() const;
+};
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------- Character --------------------------------------------------------------
+// base
+class Character {
+protected:
+	Character(Point p, double speed, const IMG *mage, const IMG *shotImage);
+	
+	Point point;
+	const IMG *image, *shotImage;
+	double speed;
+
+public:
+	virtual void move(Direction dir) = 0;
+
+	Point getPoint() const;
+	const IMG *getImage() const;
+	const IMG *getShotImage() const;
+	double getSpeed() const;
+	void info() const;		// for debug
+	void draw() const;
+};
+
+// player
+class Player: public Character {
+public:
+	Player(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage);
+
+	virtual void move(Direction dir);
+};
+
+// enemy
+class Enemy: public Character {
+public:
+	Enemy(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage);
+
+	virtual void move(Direction dir);
 };
 // ---------------------------------------------------------------------------------------------------------------------------------

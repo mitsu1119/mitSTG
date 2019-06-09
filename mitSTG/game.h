@@ -7,6 +7,7 @@
 #include "STG.h"
 
 constexpr size_t MAX_ENEMY_DISP = 10;
+constexpr size_t MAX_SHOT_DISP = 10;
 class Game {
 private:
 	Player *player;
@@ -14,6 +15,8 @@ private:
 	Direction keyDirection;
 	std::vector<const Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
+	std::vector <const Shot *> shotPool;
+	std::vector<bool> shotPoolFlags;
 	size_t enemCount;
 	int counter;
 
@@ -24,7 +27,9 @@ private:
 	int getNextEnemyTiming();
 
 	void playerKeyProcessing();
+	void enemyShotProcessing();
 	void enemyProcessing();
+	void enemyShotDrawing();
 	void enemyDrawing();
 
 public:
