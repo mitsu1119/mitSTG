@@ -1,9 +1,9 @@
 #include "game.h"
 
 Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages): player(player), keyDirection(CENTER), enemCount(0), counter(0) {
-	enemyPool = std::vector<const Enemy *>(MAX_ENEMY_DISP, nullptr);
+	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
-	shotPool = std::vector<const Shot *>(MAX_SHOT_DISP, nullptr);
+	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
 	shotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
 	std::fstream ifs(stagePath);
@@ -63,16 +63,22 @@ void Game::playerKeyProcessing() {
 }
 
 void Game::enemyShotProcessing() {
+	// flag on
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
-					shotPool[j] = new Shot(Bullet(enemyPool[i]->getPoint(), enemyPool[i]->getShotImage()));
+					shotPool[j] = new Shot(Bullet(enemyPool[i]->getPoint(), enemyPool[i]->getShotImage()), 0);
 					shotPoolFlags[j] = true;
 					break;
 				}
 			}
 		}
+	}
+
+	// move
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(shotPoolFlags[i] == true) smover(shotPool[i]);
 	}
 }
 

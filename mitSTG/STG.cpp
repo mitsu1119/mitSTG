@@ -4,19 +4,50 @@
 Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
 }
 
+void Bullet::moveX(double dx) {
+	point.moveX(dx);
+}
+
+void Bullet::moveY(double dy) {
+	point.moveY(dy);
+}
+
 void Bullet::draw() const {
 	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Bullet bullet): bullet(bullet) {
+Shot::Shot(Bullet bullet, int movePattern): bullet(bullet), movePattern(movePattern) {
+}
+
+void Shot::moveX(double dx) {
+	bullet.moveX(dx);
+}
+
+void Shot::moveY(double dy) {
+	bullet.moveY(dy);
+}
+
+int Shot::getMovePattern() const {
+	return movePattern;
 }
 
 void Shot::draw() const {
 	bullet.draw();
 }
 // -------------------------------------------------------------------------------------
+
+// ------------------------- ShotMover class -----------------------------------------
+ShotMover::ShotMover() {
+	moveFuncList.push_back(&ShotMover::target);
+}
+
+void ShotMover::target(Shot *shot) {
+	shot->moveX(5.0);
+	shot->moveY(5.0);
+}
+// --------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
 Character::Character(Point p, double speed, const IMG *image, const IMG *shotImage): point(p), speed(speed), image(image), shotImage(shotImage) {

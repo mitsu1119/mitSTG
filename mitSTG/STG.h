@@ -27,17 +27,40 @@ private:
 public:
 	Bullet(Point point, const IMG *image);
 
+	void moveX(double dx);
+	void moveY(double dy);
 	void draw() const;
 };
 
 class Shot {
 private:
 	Bullet bullet;
+	int movePattern;
 
 public:
-	Shot(Bullet bullet);
+	Shot(Bullet bullet, int movePattern);
 
+	void moveX(double dx);
+	void moveY(double dy);
+	int getMovePattern() const;
 	void draw() const;
+};
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------- Shot Mover ------------------------------------------------------------
+class ShotMover {
+private:
+	typedef void(ShotMover:: *SFUNC)(Shot *shot);
+	std::vector<SFUNC> moveFuncList;
+
+	void target(Shot *shot);
+
+public:
+	ShotMover();
+
+	void operator ()(Shot *shot) {
+		(this->*moveFuncList[shot->getMovePattern()])(shot);
+	}
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
 

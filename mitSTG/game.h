@@ -13,10 +13,11 @@ private:
 	Player *player;
 	Stage stage;
 	Direction keyDirection;
-	std::vector<const Enemy *> enemyPool;
+	std::vector<Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
-	std::vector <const Shot *> shotPool;
+	std::vector <Shot *> shotPool;
 	std::vector<bool> shotPoolFlags;
+	ShotMover smover;
 	size_t enemCount;
 	int counter;
 
