@@ -69,7 +69,7 @@ void Game::enemyShotProcessing() {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
 					if(shotPool[j] == nullptr) delete shotPool[j];
-					shotPool[j] = new Shot(Bullet(enemyPool[i]->getPoint(), enemyPool[i]->getShotImage()), 0);
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), 0, enemyPool[i]->getShotImage());
 					shotPoolFlags[j] = true;
 					break;
 				}

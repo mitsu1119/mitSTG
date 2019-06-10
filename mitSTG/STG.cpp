@@ -1,48 +1,23 @@
 #include "STG.h"
 
-// ------------------------ Bullet class ------------------------------------------------
-Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
+// ------------------------ Shot class -------------------------------------------------
+Shot::Shot(Point point, int movePattern, const IMG *image): point(point), movePattern(movePattern), image(image) {
 }
 
-Point Bullet::getImageSize() {
-	return Point((double)image->getSizeX(), (double)image->getSizeY());
+Point Shot::getImageSize() const {
+	return Point(image->getSizeX(), image->getSizeY());
 }
 
-const Point *Bullet::getPointPt() {
+const Point *Shot::getPointPt() const {
 	return &point;
 }
 
-void Bullet::moveX(double dx) {
+void Shot::moveX(double dx) {
 	point.moveX(dx);
 }
 
-void Bullet::moveY(double dy) {
-	point.moveY(dy);
-}
-
-void Bullet::draw() const {
-	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
-}
-// -------------------------------------------------------------------------------------
-
-// ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Bullet bullet, int movePattern): bullet(bullet), movePattern(movePattern) {
-}
-
-Point Shot::getImageSize() {
-	return bullet.getImageSize();
-}
-
-const Point *Shot::getPointPt() {
-	return bullet.getPointPt();
-}
-
-void Shot::moveX(double dx) {
-	bullet.moveX(dx);
-}
-
 void Shot::moveY(double dy) {
-	bullet.moveY(dy);
+	point.moveY(dy);
 }
 
 int Shot::getMovePattern() const {
@@ -50,7 +25,7 @@ int Shot::getMovePattern() const {
 }
 
 void Shot::draw() const {
-	bullet.draw();
+	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 

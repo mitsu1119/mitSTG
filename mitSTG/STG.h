@@ -19,31 +19,17 @@ enum StageAccessing {
 // -----------------------------------------------------------------------------------------------------------------------------------
 
 // ---------------------------------------------------------- Shot -----------------------------------------------------------------
-class Bullet {
+class Shot {
 private:
 	Point point;
 	const IMG *image;
-
-public:
-	Bullet(Point point, const IMG *image);
-
-	Point getImageSize();
-	const Point *getPointPt();
-	void moveX(double dx);
-	void moveY(double dy);
-	void draw() const;
-};
-
-class Shot {
-private:
-	Bullet bullet;
 	int movePattern;
 
 public:
-	Shot(Bullet bullet, int movePattern);
+	Shot(Point point, int movePattern, const IMG *image);
 
-	Point getImageSize();
-	const Point *getPointPt();
+	Point getImageSize() const;
+	const Point *getPointPt() const;
 	void moveX(double dx);
 	void moveY(double dy);
 	int getMovePattern() const;
