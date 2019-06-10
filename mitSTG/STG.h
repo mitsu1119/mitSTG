@@ -27,6 +27,8 @@ private:
 public:
 	Bullet(Point point, const IMG *image);
 
+	Point getImageSize();
+	const Point *getPointPt();
 	void moveX(double dx);
 	void moveY(double dy);
 	void draw() const;
@@ -40,6 +42,8 @@ private:
 public:
 	Shot(Bullet bullet, int movePattern);
 
+	Point getImageSize();
+	const Point *getPointPt();
 	void moveX(double dx);
 	void moveY(double dy);
 	int getMovePattern() const;
@@ -78,6 +82,7 @@ public:
 	virtual void move(Direction dir) = 0;
 
 	Point getPoint() const;
+	const Point *getPointPt() const;
 	const IMG *getImage() const;
 	const IMG *getShotImage() const;
 	double getSpeed() const;

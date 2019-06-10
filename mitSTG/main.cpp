@@ -23,7 +23,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, playerImages["redBox"], playerImages["redBox"]);
-	Game game(&player, "dat\\stage\\stage1.csv", enemyImages, shotImages);
+	Game game(&player, "dat\\stage\\stage1.csv", enemyImages, shotImages, rect.left, rect.top, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}

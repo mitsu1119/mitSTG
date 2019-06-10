@@ -12,6 +12,7 @@ class Game {
 private:
 	Player *player;
 	Stage stage;
+	int leftX, rightX, topY, bottomY;		// for drawing area
 	Direction keyDirection;
 	std::vector<Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
@@ -34,7 +35,7 @@ private:
 	void enemyDrawing();
 
 public:
-	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages);
+	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
 	~Game();
 
 	void mainLoop();

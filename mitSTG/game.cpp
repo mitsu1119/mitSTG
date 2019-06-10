@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages): player(player), keyDirection(CENTER), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -68,6 +68,7 @@ void Game::enemyShotProcessing() {
 		if(enemyPoolFlags[i] == true) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
+					if(shotPool[j] == nullptr) delete shotPool[j];
 					shotPool[j] = new Shot(Bullet(enemyPool[i]->getPoint(), enemyPool[i]->getShotImage()), 0);
 					shotPoolFlags[j] = true;
 					break;
@@ -77,8 +78,18 @@ void Game::enemyShotProcessing() {
 	}
 
 	// move
+	const Point *pt;
+	int harfX, harfY;
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
-		if(shotPoolFlags[i] == true) smover(shotPool[i]);
+		if(shotPoolFlags[i] == true) {
+			smover(shotPool[i]);
+			pt = shotPool[i]->getPointPt();
+			harfX = int(shotPool[i]->getImageSize().getX() / 2.0);
+			harfY = int(shotPool[i]->getImageSize().getY() / 2.0);
+			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
+				shotPoolFlags[i] = false;
+			}
+		}
 	}
 }
 

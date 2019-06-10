@@ -4,6 +4,14 @@
 Bullet::Bullet(Point point, const IMG *image): point(point), image(image) {
 }
 
+Point Bullet::getImageSize() {
+	return Point((double)image->getSizeX(), (double)image->getSizeY());
+}
+
+const Point *Bullet::getPointPt() {
+	return &point;
+}
+
 void Bullet::moveX(double dx) {
 	point.moveX(dx);
 }
@@ -19,6 +27,14 @@ void Bullet::draw() const {
 
 // ------------------------ Shot class -------------------------------------------------
 Shot::Shot(Bullet bullet, int movePattern): bullet(bullet), movePattern(movePattern) {
+}
+
+Point Shot::getImageSize() {
+	return bullet.getImageSize();
+}
+
+const Point *Shot::getPointPt() {
+	return bullet.getPointPt();
 }
 
 void Shot::moveX(double dx) {
@@ -55,6 +71,10 @@ Character::Character(Point p, double speed, const IMG *image, const IMG *shotIma
 
 Point Character::getPoint() const {
 	return point;
+}
+
+const Point *Character::getPointPt() const {
+	return &point;
 }
 
 const IMG *Character::getImage() const {
