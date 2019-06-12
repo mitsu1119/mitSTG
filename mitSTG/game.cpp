@@ -9,6 +9,7 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	std::fstream ifs(stagePath);
 	if(ifs.fail()) return;
 
+	// loading stage file
 	std::string buf;
 	std::vector<std::string> parsed;
 	auto enemImages = enemyImages;
@@ -16,7 +17,7 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
 		parsed = split_str(buf, ',');
-		stage.emplace_back(enemImages[parsed[0]], std::stod(parsed[1]), std::stod(parsed[2]), std::stoi(parsed[3]), stImages[parsed[4]]);
+		stage.emplace_back(enemImages[parsed[0]], std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stoi(parsed[3]), stImages[parsed[4]]);
 	}
 	ifs.close();
 }
@@ -69,7 +70,7 @@ void Game::enemyShotProcessing() {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
 					if(shotPool[j] == nullptr) delete shotPool[j];
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), 0, enemyPool[i]->getShotImage());
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage());
 					shotPoolFlags[j] = true;
 					break;
 				}
@@ -97,8 +98,8 @@ void Game::enemyProcessing() {
 	while(true) {
 		if(counter == getNextEnemyTiming()) {
 			// create enemy in the enemy pool
-			auto [poolImage, poolInitPx, poolInitPy, poolTiming, poolShotImage] = getNextEnemyData();
-			Enemy *enem = new Enemy(poolInitPx, poolInitPy, 10, poolImage, poolShotImage);
+			auto [poolImage, poolInitPx, poolInitPy, poolShotPattern, poolTiming, poolShotImage] = getNextEnemyData();
+			Enemy *enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolImage, poolShotImage);
 			for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 				if(enemyPoolFlags[i] == false) {
 					enemyPool[i] = enem;

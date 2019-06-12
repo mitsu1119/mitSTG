@@ -11,10 +11,10 @@
 
 // -------------------------------------------------------- Stage -------------------------------------------------------------------
 // stage[0][STG_ENEMYIMG] => 1th enemy's image
-typedef std::tuple<const IMG *, double, double, int, const IMG *> StagePart;
+typedef std::tuple<const IMG *, double, double, std::string, int, const IMG *> StagePart;
 typedef std::vector<StagePart> Stage;
 enum StageAccessing {
-	STA_ENEMYIMG, STA_INITPX, STA_INITPY, STA_TIMING, STA_SHOTIMG
+	STA_ENEMYIMG, STA_INITPX, STA_INITPY, STA_SPATTERN, STA_TIMING, STA_SHOTIMG
 };
 // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -23,16 +23,16 @@ class Shot {
 private:
 	Point point;
 	const IMG *image;
-	int movePattern;
+	std::string movePattern;
 
 public:
-	Shot(Point point, int movePattern, const IMG *image);
+	Shot(Point point, std::string movePattern, const IMG *image);
 
 	Point getImageSize() const;
 	const Point *getPointPt() const;
 	void moveX(double dx);
 	void moveY(double dy);
-	int getMovePattern() const;
+	std::string getMovePattern() const;
 	void draw() const;
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ public:
 class ShotMover {
 private:
 	typedef void(ShotMover:: *SFUNC)(Shot *shot);
-	std::vector<SFUNC> moveFuncList;
+	std::unordered_map<std::string, SFUNC> moveFuncTable;
 
 	void target(Shot *shot);
 
@@ -49,7 +49,7 @@ public:
 	ShotMover();
 
 	void operator ()(Shot *shot) {
-		(this->*moveFuncList[shot->getMovePattern()])(shot);
+		(this->*moveFuncTable[shot->getMovePattern()])(shot);
 	}
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -86,9 +86,12 @@ public:
 
 // enemy
 class Enemy: public Character {
+private:
+	std::string shotPattern;
 public:
-	Enemy(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage);
+	Enemy(double initPx, double initPy, double speed, std::string shotPattern,  const IMG *image, const IMG *shotImage);
 
 	virtual void move(Direction dir);
+	std::string getShotPattern();
 };
 // ---------------------------------------------------------------------------------------------------------------------------------

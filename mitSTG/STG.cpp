@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, int movePattern, const IMG *image): point(point), movePattern(movePattern), image(image) {
+Shot::Shot(Point point, std::string movePattern, const IMG *image): point(point), movePattern(movePattern), image(image) {
 }
 
 Point Shot::getImageSize() const {
@@ -20,7 +20,7 @@ void Shot::moveY(double dy) {
 	point.moveY(dy);
 }
 
-int Shot::getMovePattern() const {
+std::string Shot::getMovePattern() const {
 	return movePattern;
 }
 
@@ -31,7 +31,7 @@ void Shot::draw() const {
 
 // ------------------------- ShotMover class -----------------------------------------
 ShotMover::ShotMover() {
-	moveFuncList.push_back(&ShotMover::target);
+	moveFuncTable["target"] = &ShotMover::target;
 }
 
 void ShotMover::target(Shot *shot) {
@@ -85,9 +85,13 @@ void Player::move(Direction dir) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage): Character(Point(initPx, initPy), speed, image, shotImage) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, const IMG *image, const IMG *shotImage): Character(Point(initPx, initPy), speed, image, shotImage), shotPattern(shotPattern) {
 }
 
 void Enemy::move(Direction dir) {
+}
+
+std::string Enemy::getShotPattern() {
+	return shotPattern;
 }
 // -------------------------------------------------------------------------------------
