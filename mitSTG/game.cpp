@@ -6,18 +6,18 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
 	shotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
+	smover = new ShotMover(player);
+
 	std::fstream ifs(stagePath);
 	if(ifs.fail()) return;
 
 	// loading stage file
 	std::string buf;
 	std::vector<std::string> parsed;
-	auto enemImages = enemyImages;
-	auto stImages = shotImages;
 	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
 		parsed = split_str(buf, ',');
-		stage.emplace_back(enemImages[parsed[0]], std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stoi(parsed[3]), stImages[parsed[4]]);
+		stage.emplace_back(enemyImages.at(parsed[0]), std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stod(parsed[6]), std::stoi(parsed[7]), std::stoi(parsed[3]), shotImages.at(parsed[4]));
 	}
 	ifs.close();
 }
@@ -29,6 +29,8 @@ Game::~Game() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPool[i] != nullptr) delete shotPool[i];
 	}
+
+	delete smover;
 }
 
 void Game::checkKey() {
@@ -66,11 +68,11 @@ void Game::playerKeyProcessing() {
 void Game::enemyShotProcessing() {
 	// flag on
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPoolFlags[i] == true) {
+		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
 					if(shotPool[j] == nullptr) delete shotPool[j];
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage());
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage());
 					shotPoolFlags[j] = true;
 					break;
 				}
@@ -83,7 +85,7 @@ void Game::enemyShotProcessing() {
 	int harfX, harfY;
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i] == true) {
-			smover(shotPool[i]);
+			smover->operator()(shotPool[i]);
 			pt = shotPool[i]->getPointPt();
 			harfX = int(shotPool[i]->getImageSize().getX() / 2.0);
 			harfY = int(shotPool[i]->getImageSize().getY() / 2.0);
@@ -95,11 +97,12 @@ void Game::enemyShotProcessing() {
 }
 
 void Game::enemyProcessing() {
+	// flag on
 	while(true) {
 		if(counter == getNextEnemyTiming()) {
 			// create enemy in the enemy pool
-			auto [poolImage, poolInitPx, poolInitPy, poolShotPattern, poolTiming, poolShotImage] = getNextEnemyData();
-			Enemy *enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolImage, poolShotImage);
+			auto [poolImage, poolInitPx, poolInitPy, poolShotPattern, poolShotSpeed, poolShotInterval, poolTiming, poolShotImage] = getNextEnemyData();
+			Enemy *enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, poolImage, poolShotImage);
 			for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 				if(enemyPoolFlags[i] == false) {
 					enemyPool[i] = enem;
@@ -110,6 +113,11 @@ void Game::enemyProcessing() {
 		} else {
 			break;
 		}
+	}
+
+	// move
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPoolFlags[i] == true) enemyPool[i]->move(CENTER);
 	}
 }
 

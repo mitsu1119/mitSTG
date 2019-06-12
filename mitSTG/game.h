@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include "STG.h"
 
-constexpr size_t MAX_ENEMY_DISP = 10;
-constexpr size_t MAX_SHOT_DISP = 10;
+constexpr size_t MAX_ENEMY_DISP = 20;
+constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
 private:
 	Player *player;
@@ -18,7 +18,7 @@ private:
 	std::vector<bool> enemyPoolFlags;
 	std::vector <Shot *> shotPool;
 	std::vector<bool> shotPoolFlags;
-	ShotMover smover;
+	ShotMover *smover;
 	size_t enemCount;
 	int counter;
 
