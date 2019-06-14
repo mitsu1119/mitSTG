@@ -18,6 +18,8 @@ private:
 	std::vector<bool> enemyPoolFlags;
 	std::vector <Shot *> shotPool;
 	std::vector<bool> shotPoolFlags;
+	std::vector<Shot *> playerShotPool;
+	std::vector<bool> playerShotPoolFlags;
 	ShotMover *smover;
 	size_t enemCount;
 	int counter;
@@ -30,8 +32,10 @@ private:
 
 	void playerKeyProcessing();
 	void enemyShotProcessing();
+	void playerShotFlagProcessing();
+	void playerShotMoving();
 	void enemyProcessing();
-	void enemyShotDrawing();
+	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
 
 public:

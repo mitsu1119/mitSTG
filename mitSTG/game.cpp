@@ -5,6 +5,8 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
 	shotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
+	playerShotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
+	playerShotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
 	smover = new ShotMover(player);
 
@@ -28,6 +30,7 @@ Game::~Game() {
 	}
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPool[i] != nullptr) delete shotPool[i];
+		if(playerShotPool[i] != nullptr) delete playerShotPool[i];
 	}
 
 	delete smover;
@@ -65,15 +68,45 @@ void Game::playerKeyProcessing() {
 	if(keyDirection != CENTER) player->move(keyDirection);
 }
 
+void Game::playerShotFlagProcessing() {
+	// flag on
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(playerShotPoolFlags[i] == false && counter % player->getShotInterval() == 0) {
+			if(playerShotPool[i] != nullptr) delete playerShotPool[i];
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), player->getShotImage());
+			playerShotPoolFlags[i] = true;
+			break;
+		}
+	}
+}
+
+void Game::playerShotMoving() {
+	// move
+	const Point *pt;
+	int harfX, harfY;
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(playerShotPoolFlags[i] == true) {
+			smover->operator()(playerShotPool[i]);
+			pt = playerShotPool[i]->getPointPt();
+			harfX = int(playerShotPool[i]->getImageSize().getX() / 2.0);
+			harfY = int(playerShotPool[i]->getImageSize().getY() / 2.0);
+			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
+				playerShotPoolFlags[i] = false;
+			}
+		}
+	}
+}
+
 void Game::enemyShotProcessing() {
 	// flag on
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
-					if(shotPool[j] == nullptr) delete shotPool[j];
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage());
+					if(shotPool[j] != nullptr) delete shotPool[j];
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage(), enemyPool[i]->getShotCnt());
 					shotPoolFlags[j] = true;
+					enemyPool[i]->incShotCnt();
 					break;
 				}
 			}
@@ -121,10 +154,13 @@ void Game::enemyProcessing() {
 	}
 }
 
-void Game::enemyShotDrawing() {
+void Game::playerAndEnemyShotDrawing() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i] == true) {
 			shotPool[i]->draw();
+		}
+		if(playerShotPoolFlags[i] == true) {
+			playerShotPool[i]->draw();
 		}
 	}
 }
@@ -144,10 +180,13 @@ void Game::mainLoop() {
 
 	enemyProcessing();
 	playerKeyProcessing();
+
+	playerShotFlagProcessing();
+	playerShotMoving();
 	enemyShotProcessing();
 
 	player->draw();
 	enemyDrawing();
-	enemyShotDrawing();
+	playerAndEnemyShotDrawing();
 	ScreenFlip();
 }

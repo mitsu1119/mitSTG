@@ -1,9 +1,9 @@
 enemyType,initPx,initPy,timing,shotImage,shotType,shotSpeed,shotInterval
-blueBox,50,100,10,greenBox,target,5,3
-blueBox,120,100,60,greenBox,target,6,4
-blueBox,190,100,110,greenBox,target,7,5
-blueBox,260,100,160,greenBox,target,8,6
-blueBox,330,100,210,greenBox,target,9,7
+blueBox,50,100,10,greenBox,swirl,8,1
+blueBox,120,100,60,greenBox,swirl,8,1
+blueBox,190,100,110,greenBox,swirl,8,1
+blueBox,260,100,160,greenBox,swirl,8,1
+blueBox,330,100,210,greenBox,swirl,8,1
 blueBox,400,100,260,greenBox,target,10,8
 blueBox,470,100,310,greenBox,target,11,9
 blueBox,540,100,360,greenBox,target,12,10

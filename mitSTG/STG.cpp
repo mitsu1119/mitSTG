@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image): point(point), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0) {
+Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, int number): point(point), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number) {
 }
 
 Point Shot::getImageSize() const {
@@ -31,7 +31,14 @@ void Shot::draw() const {
 
 // ------------------------- ShotMover class -----------------------------------------
 ShotMover::ShotMover(const Player *player): player(player) {
+	moveFuncTable["player1"] = &ShotMover::player1;
 	moveFuncTable["target"] = &ShotMover::target;
+	moveFuncTable["swirl"] = &ShotMover::swirl;
+}
+
+void ShotMover::player1(Shot *shot) {
+	shot->moveY(shot->speed);
+	shot->counter++;
 }
 
 void ShotMover::target(Shot *shot) {
@@ -40,10 +47,18 @@ void ShotMover::target(Shot *shot) {
 	shot->moveY(shot->speed * sin(shot->angle));
 	shot->counter++;
 }
-// --------------------------------------------------------------------------------------
+
+void ShotMover::swirl(Shot *shot) {
+	if(shot->counter== 0) shot->angle = (double)shot->number * M_PI / 10.8;
+	shot->moveX(shot->speed * cos(shot->angle));
+	shot->moveY(shot->speed * sin(shot->angle));
+	shot->counter++;
+}
+
+// -------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, const IMG *image, const IMG *shotImage): point(p), speed(speed), image(image), shotImage(shotImage), counter(0) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shotImage(shotImage), counter(0) {
 }
 
 Point Character::getPoint() const {
@@ -62,8 +77,20 @@ const IMG *Character::getShotImage() const {
 	return shotImage;
 }
 
+std::string Character::getShotPattern() const{
+	return shotPattern;
+}
+
 double Character::getSpeed() const {
 	return speed;
+}
+
+double Character::getShotSpeed() const {
+	return shotSpeed;
+}
+
+int Character::getShotInterval() const {
+	return shotInterval;
 }
 
 int Character::getCounter() const {
@@ -80,7 +107,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, const IMG *image, const IMG *shotImage) : Character(Point(initPx, initPy), speed, image, shotImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shotImage) {
 }
 
 void Player::move(Direction dir) {
@@ -91,22 +118,18 @@ void Player::move(Direction dir) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage): Character(Point(initPx, initPy), speed, image, shotImage), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shotImage), shotCnt(0) {
 }
 
 void Enemy::move(Direction dir) {
 	counter++;
 }
 
-std::string Enemy::getShotPattern() {
-	return shotPattern;
+void Enemy::incShotCnt() {
+	shotCnt++;
 }
 
-double Enemy::getShotSpeed() {
-	return shotSpeed;
-}
-
-int Enemy::getShotInterval() {
-	return shotInterval;
+int Enemy::getShotCnt() {
+	return shotCnt;
 }
 // -------------------------------------------------------------------------------------
