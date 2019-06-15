@@ -31,10 +31,15 @@ private:
 	int getNextEnemyTiming();
 
 	void playerKeyProcessing();
-	void enemyShotProcessing();
+
+	void enemyShotFlagProcessing();
 	void playerShotFlagProcessing();
+
+	void enemyShotMoving();
 	void playerShotMoving();
+
 	void enemyProcessing();
+
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
 

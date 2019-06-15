@@ -66,6 +66,7 @@ int Game::getNextEnemyTiming() {
 
 void Game::playerKeyProcessing() {
 	if(keyDirection != CENTER) player->move(keyDirection);
+	if(CheckHitKey(KEY_INPUT_Z)) playerShotFlagProcessing();
 }
 
 void Game::playerShotFlagProcessing() {
@@ -97,7 +98,7 @@ void Game::playerShotMoving() {
 	}
 }
 
-void Game::enemyShotProcessing() {
+void Game::enemyShotFlagProcessing() {
 	// flag on
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
@@ -112,7 +113,9 @@ void Game::enemyShotProcessing() {
 			}
 		}
 	}
+}
 
+void Game::enemyShotMoving() {
 	// move
 	const Point *pt;
 	int harfX, harfY;
@@ -180,10 +183,10 @@ void Game::mainLoop() {
 
 	enemyProcessing();
 	playerKeyProcessing();
+	enemyShotFlagProcessing();
 
-	playerShotFlagProcessing();
 	playerShotMoving();
-	enemyShotProcessing();
+	enemyShotMoving();
 
 	player->draw();
 	enemyDrawing();
