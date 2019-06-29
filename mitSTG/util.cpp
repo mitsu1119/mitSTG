@@ -1,6 +1,30 @@
 #include "util.h"
 #include "DxLib.h"
 
+// ------------------------- Direction -------------------------------------------------
+Direction dirRev(Direction dir) {
+	switch(dir) {
+	case RIGHT:
+		return LEFT;
+	case RUP:
+		return LDOWN;
+	case UP:
+		return DOWN;
+	case LUP:
+		return RDOWN;
+	case LEFT:
+		return RIGHT;
+	case LDOWN:
+		return RUP;
+	case DOWN:
+		return UP;
+	case RDOWN:
+		return LUP;
+	default:
+		return dir;
+	}
+}
+
 // ------------------------- out of all class --------------------------------------------
 std::vector<std::string> split_str(const std::string &s, char delim) {
 	std::vector<std::string> ret;

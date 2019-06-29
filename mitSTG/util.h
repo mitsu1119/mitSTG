@@ -7,6 +7,8 @@ enum Direction {
 	RIGHT, RUP, UP, LUP, LEFT, LDOWN, DOWN, RDOWN, CENTER
 };
 
+Direction dirRev(Direction dir);
+
 std::vector<std::string> split_str(const std::string &s, char delim);
 
 class Point {

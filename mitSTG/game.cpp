@@ -9,6 +9,7 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	playerShotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
 	smover = new ShotMover(player);
+	collider = new ShapeCollider();
 
 	std::fstream ifs(stagePath);
 	if(ifs.fail()) return;
@@ -34,6 +35,7 @@ Game::~Game() {
 	}
 
 	delete smover;
+	delete collider;
 }
 
 void Game::checkKey() {
@@ -157,6 +159,17 @@ void Game::enemyProcessing() {
 	}
 }
 
+void Game::collisionProcessing() {
+	// enemy and player
+	Shape s1(player->getPoint().getX() - 21.0, player->getPoint().getY() - 21.0, player->getPoint().getX() + 21.0, player->getPoint().getY() + 21.0);
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPoolFlags[i] == true) {
+			Shape s2(enemyPool[i]->getPoint().getX() - 21.0, enemyPool[i]->getPoint().getY() - 21.0, enemyPool[i]->getPoint().getX() + 21.0, enemyPool[i]->getPoint().getY() + 21.0);
+			if(collider->operator()(s1, s2) == true) player->move(dirRev(keyDirection));
+		}
+	}
+}
+
 void Game::playerAndEnemyShotDrawing() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i] == true) {
@@ -187,6 +200,8 @@ void Game::mainLoop() {
 
 	playerShotMoving();
 	enemyShotMoving();
+
+	collisionProcessing();
 
 	player->draw();
 	enemyDrawing();
