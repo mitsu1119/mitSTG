@@ -63,6 +63,14 @@ void Point::moveX(double dx) {
 void Point::moveY(double dy) {
 	y += dy;
 }
+
+void Point::setX(double x) {
+	this->x = x;
+}
+
+void Point::setY(double y) {
+	this->y = y;
+}
 // --------------------------------------------------------------------------------------
 
 // ------------------------- IMG class --------------------------------------------------

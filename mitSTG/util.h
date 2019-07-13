@@ -23,6 +23,8 @@ public:
 	double getY() const;
 	void moveX(double dx);
 	void moveY(double dy);
+	void setX(double x);
+	void setY(double y);
 };
 
 class IMG {

@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, int number): point(point), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number) {
+Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, int number, const Character *target): point(point), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), target(target) {
 }
 
 Point Shot::getImageSize() const {
@@ -32,12 +32,27 @@ void Shot::draw() const {
 // ------------------------- ShotMover class -----------------------------------------
 ShotMover::ShotMover(const Player *player): player(player) {
 	moveFuncTable["player1"] = &ShotMover::player1;
+	moveFuncTable["player2"] = &ShotMover::player2;
 	moveFuncTable["target"] = &ShotMover::target;
 	moveFuncTable["swirl"] = &ShotMover::swirl;
 }
 
 void ShotMover::player1(Shot *shot) {
 	shot->moveY(shot->speed);
+	shot->counter++;
+}
+
+void ShotMover::player2(Shot *shot) {
+	double t = (1.0 / shot->speed) * shot->counter;
+	double p0x = player->getPointPt()->getX(), p0y = player->getPointPt()->getY();
+	double p3x = shot->target->getPointPt()->getX(), p3y = shot->target->getPointPt()->getY();
+	double rad = atan2(p0y - p3y, p0x - p3x);
+	double p1x = p0x - 20, p1y = p0y + 200;
+	double p2x = (p0x + p3x) / 2 + 3 * cos(rad + M_PI / 2), p2y = (p0y + p3y) / 2 + 3 * sin(rad + M_PI / 2);
+	double x = (1 - t) * (1 - t) * (1 - t) * p0x + 3 * (1 - t) * (1 - t) * t * p1x + 3 * (1 - t) * t * t * p2x + t * t * t * p3x;
+	double y = (1 - t) * (1 - t) * (1 - t) * p0y + 3 * (1 - t) * (1 - t) * t * p1y + 3 * (1 - t) * t * t * p2y + t * t * t * p3y;
+	shot->point.setX(x);
+	shot->point.setY(y);
 	shot->counter++;
 }
 

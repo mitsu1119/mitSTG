@@ -76,7 +76,7 @@ void Game::playerShotFlagProcessing() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(playerShotPoolFlags[i] == false && counter % player->getShotInterval() == 0) {
 			if(playerShotPool[i] != nullptr) delete playerShotPool[i];
-			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), player->getShotImage());
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), player->getShotImage(), 0, enemyPool[0]);
 			playerShotPoolFlags[i] = true;
 			break;
 		}

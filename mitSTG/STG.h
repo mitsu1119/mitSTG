@@ -20,6 +20,7 @@ enum StageAccessing {
 
 // ---------------------------------------------------------- Shot -----------------------------------------------------------------
 class ShotMover;
+class Character;
 class Shot {
 friend ShotMover;
 private:
@@ -29,11 +30,13 @@ private:
 	double speed, angle;
 	int counter;
 
+	const Character *target;
+
 	// The number of bullet shot by an enemy
 	int number;
 
 public:
-	Shot(Point point, double speed, std::string movePattern, const IMG *image, int number = 0);
+	Shot(Point point, double speed, std::string movePattern, const IMG *image, int number = 0, const Character *target = nullptr);
 
 	Point getImageSize() const;
 	const Point *getPointPt() const;
@@ -53,6 +56,7 @@ private:
 	const Player *player;
 
 	void player1(Shot *shot);
+	void player2(Shot *shot);
 	void target(Shot *shot);
 	void swirl(Shot *shot);
 
