@@ -25,7 +25,7 @@ std::string Shot::getMovePattern() const {
 }
 
 void Shot::draw() const {
-	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
+	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle - M_PI / 2, image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ void ShotMover::player2(Shot *shot) {
 	double p2x = (p0x + p3x) / 2 + 3 * cos(rad + M_PI / 2), p2y = (p0y + p3y) / 2 + 3 * sin(rad + M_PI / 2);
 	double x = (1 - t) * (1 - t) * (1 - t) * p0x + 3 * (1 - t) * (1 - t) * t * p1x + 3 * (1 - t) * t * t * p2x + t * t * t * p3x;
 	double y = (1 - t) * (1 - t) * (1 - t) * p0y + 3 * (1 - t) * (1 - t) * t * p1y + 3 * (1 - t) * t * t * p2y + t * t * t * p3y;
+	shot->angle = atan2(shot->point.getY() - y, shot->point.getX() - x);
 	shot->point.setX(x);
 	shot->point.setY(y);
 	shot->counter++;
