@@ -168,6 +168,40 @@ void Game::collisionProcessing() {
 			if(collider->operator()(s1, s2) == true) player->move(dirRev(keyDirection));
 		}
 	}
+
+	// enemy and player shots
+	bool delFlag = false;
+	const Point *pShotPt, *enemPt;
+	Shape *sPshot, *sEnem;
+	double pShotHarfX, pShotHarfY, enemHarfX, enemHarfY;
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(playerShotPoolFlags[i] == true) {
+			pShotPt = playerShotPool[i]->getPointPt();
+			pShotHarfX = playerShotPool[i]->getImageSize().getX() / 2.0;
+			pShotHarfY = playerShotPool[i]->getImageSize().getY() / 2.0;
+			sPshot = new Shape(pShotPt->getX() - pShotHarfX, pShotPt->getY() - pShotHarfY, pShotPt->getX() + pShotHarfX, pShotPt->getY() + pShotHarfY);
+			// enemys
+			for(size_t j = 0; j < MAX_ENEMY_DISP; j++) {
+				if(enemyPoolFlags[j] == true) {
+					enemPt = enemyPool[j]->getPointPt();
+					enemHarfX = enemyPool[j]->getImage()->getSizeX() / 2.0;
+					enemHarfY = enemyPool[j]->getImage()->getSizeY() / 2.0;
+					sEnem = new Shape(enemPt->getX() - enemHarfX, enemPt->getY() - enemHarfY, enemPt->getX() + enemHarfX, enemPt->getY() + enemHarfY);
+					if(collider->operator()(*sPshot, *sEnem) == true) {
+						delFlag = true;
+						delete sEnem;
+						break;
+					}
+					delete sEnem;
+				}
+			}
+			if(delFlag == true) {
+				playerShotPoolFlags[i] = false;
+				delFlag = false;
+			}
+			delete sPshot;
+		}
+	}
 }
 
 void Game::playerAndEnemyShotDrawing() {

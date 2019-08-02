@@ -39,6 +39,7 @@ ShotMover::ShotMover(const Player *player): player(player) {
 
 void ShotMover::player1(Shot *shot) {
 	shot->moveY(shot->speed);
+	shot->angle = M_PI / 2.0;
 	shot->counter++;
 }
 
