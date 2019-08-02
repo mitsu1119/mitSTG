@@ -161,19 +161,32 @@ void Game::enemyProcessing() {
 
 void Game::collisionProcessing() {
 	// enemy and player
-	Shape s1(player->getPoint().getX() - 21.0, player->getPoint().getY() - 21.0, player->getPoint().getX() + 21.0, player->getPoint().getY() + 21.0);
+	const Point *playerPt, *enemPt;
+	double playerHarfX, playerHarfY, enemHarfX, enemHarfY;
+	Shape *sPlayer, *sEnem;
+
+	playerPt = player->getPointPt();
+	playerHarfX = player->getImage()->getSizeX() / 2.0;
+	playerHarfY = player->getImage()->getSizeY() / 2.0;
+	sPlayer = new Shape(playerPt->getX() - playerHarfX, playerPt->getY() - playerHarfY, playerPt->getX() + playerHarfX, playerPt->getY() + playerHarfY);
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true) {
-			Shape s2(enemyPool[i]->getPoint().getX() - 21.0, enemyPool[i]->getPoint().getY() - 21.0, enemyPool[i]->getPoint().getX() + 21.0, enemyPool[i]->getPoint().getY() + 21.0);
-			if(collider->operator()(s1, s2) == true) player->move(dirRev(keyDirection));
+			enemPt = enemyPool[i]->getPointPt();
+			enemHarfX = enemyPool[i]->getImage()->getSizeX() / 2.0;
+			enemHarfY = enemyPool[i]->getImage()->getSizeY() / 2.0;
+			sEnem = new Shape(enemPt->getX() - enemHarfX, enemPt->getY() - enemHarfY, enemPt->getX() + enemHarfX, enemPt->getY() + enemHarfY);
+			if(collider->operator()(*sPlayer, *sEnem) == true) player->move(dirRev(keyDirection));
+			delete sEnem;
 		}
 	}
+	delete sPlayer;
 
 	// enemy and player shots
 	bool delFlag = false;
-	const Point *pShotPt, *enemPt;
-	Shape *sPshot, *sEnem;
-	double pShotHarfX, pShotHarfY, enemHarfX, enemHarfY;
+	const Point *pShotPt;
+	Shape *sPshot;
+	double pShotHarfX, pShotHarfY;
+
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(playerShotPoolFlags[i] == true) {
 			pShotPt = playerShotPool[i]->getPointPt();
