@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -39,21 +39,25 @@ Game::~Game() {
 }
 
 void Game::checkKey() {
-	if(CheckHitKey(KEY_INPUT_LEFT)) {
-		if(CheckHitKey(KEY_INPUT_DOWN)) keyDirection = LDOWN;
-		else if(CheckHitKey(KEY_INPUT_UP)) keyDirection = LUP;
-		else keyDirection = LEFT;
-	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
-		if(CheckHitKey(KEY_INPUT_DOWN)) keyDirection = RDOWN;
-		else if(CheckHitKey(KEY_INPUT_UP)) keyDirection = RUP;
-		else keyDirection = RIGHT;
-	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
-		keyDirection = DOWN;
-	} else if(CheckHitKey(KEY_INPUT_UP)) {
-		keyDirection = UP;
-	} else {
-		keyDirection = CENTER;
-	}
+		int padkey = GetJoypadInputState(DX_INPUT_KEY_PAD1);
+		if(padkey & PAD_INPUT_LEFT) {
+			if(padkey & PAD_INPUT_DOWN) keyDirection = LDOWN;
+			else if(padkey & PAD_INPUT_UP) keyDirection = LUP;
+			else keyDirection = LEFT;
+		} else if(padkey & PAD_INPUT_RIGHT) {
+			if(padkey & PAD_INPUT_DOWN) keyDirection = RDOWN;
+			else if(padkey & PAD_INPUT_UP) keyDirection = RUP;
+			else keyDirection = RIGHT;
+		} else if(padkey & PAD_INPUT_DOWN) {
+			keyDirection = DOWN;
+		} else if(padkey & PAD_INPUT_UP) {
+			keyDirection = UP;
+		} else {
+			keyDirection = CENTER;
+		}
+
+		if(padkey & PAD_INPUT_A) checkKeyPShotBt = true;
+		else checkKeyPShotBt = false;
 }
 
 StagePart Game::getNextEnemyData() {
@@ -68,7 +72,7 @@ int Game::getNextEnemyTiming() {
 
 void Game::playerKeyProcessing() {
 	if(keyDirection != CENTER) player->move(keyDirection);
-	if(CheckHitKey(KEY_INPUT_Z)) playerShotFlagProcessing();
+	if(checkKeyPShotBt) playerShotFlagProcessing();
 }
 
 void Game::playerShotFlagProcessing() {

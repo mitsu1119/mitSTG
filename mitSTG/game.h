@@ -17,6 +17,7 @@ private:
 	int leftX, rightX, topY, bottomY;		// for drawing area
 	
 	Direction keyDirection;
+	bool checkKeyPShotBt;
 	
 	std::vector<Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
