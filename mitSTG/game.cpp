@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -78,10 +78,11 @@ void Game::playerKeyProcessing() {
 void Game::playerShotFlagProcessing() {
 	// flag on
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
-		if(playerShotPoolFlags[i] == false && counter % player->getShotInterval() == 0) {
+		if(playerShotPoolFlags[i] == false && counter - timeOfLastPShot > player->getShotInterval()) {
 			if(playerShotPool[i] != nullptr) delete playerShotPool[i];
 			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), player->getShotImage(), 0, enemyPool[0]);
 			playerShotPoolFlags[i] = true;
+			timeOfLastPShot = counter;
 			break;
 		}
 	}

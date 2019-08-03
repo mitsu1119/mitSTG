@@ -18,6 +18,7 @@ private:
 	
 	Direction keyDirection;
 	bool checkKeyPShotBt;
+	int timeOfLastPShot;
 	
 	std::vector<Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
