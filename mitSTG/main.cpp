@@ -28,9 +28,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, "player1", -18.0, 8, playerImages["redBox"], shotImages["playerShot"]);
-
-	int background = LoadGraph("dat\\image\\bg\\bg1.png");
-	Game game(&player, "dat\\stage\\stage1.csv", background, enemyImages, shotImages, 0, 0, rect.right, rect.bottom);
+	Game game(&player, "dat\\stage\\stage1.csv", enemyImages, shotImages, 0, 0, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}

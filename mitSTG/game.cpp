@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, int bgHandle, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), bgHandle(bgHandle), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player),bgY(0), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -19,6 +19,14 @@ Game::Game(Player *player, const char *stagePath, int bgHandle, const IMGDataBas
 	std::vector<std::string> parsed;
 	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
+		// stage background data
+		if(buf[0] == '#') break;
+		parsed = split_str(buf, ',');
+		bgImg = new IMG(("dat\\image\\bg\\" + parsed[0]).c_str());
+		scrollSpeed = std::stoi(parsed[1]);
+	}
+	while(getline(ifs, buf)) {
+		// stage enemys data
 		parsed = split_str(buf, ',');
 		stage.emplace_back(enemyImages.at(parsed[0]), std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stod(parsed[6]), std::stoi(parsed[7]), std::stoi(parsed[3]), shotImages.at(parsed[4]));
 	}
@@ -36,6 +44,8 @@ Game::~Game() {
 
 	delete smover;
 	delete collider;
+
+	delete bgImg;
 }
 
 void Game::checkKey() {
@@ -224,8 +234,17 @@ void Game::collisionProcessing() {
 	}
 }
 
+void Game::bgProcessing() {
+	bgY += scrollSpeed;
+}
+
 void Game::bgDrawing() {
-	DrawGraph(0, 0, bgHandle, true);
+	int bgYbuf = bgY;
+
+	do {
+		DrawGraph(0, bgYbuf, bgImg->getHandle(), true);
+		bgYbuf -= bgImg->getSizeY();
+	} while(bgYbuf >= -bgImg->getSizeY());
 }
 
 void Game::playerAndEnemyShotDrawing() {
@@ -250,10 +269,6 @@ void Game::enemyDrawing() {
 void Game::mainLoop() {
 	ClearDrawScreen();
 	counter++;
-	DrawLine(leftX, topY, leftX, bottomY, WHITE);
-	DrawLine(rightX, topY, rightX, bottomY, WHITE);
-	DrawLine(rightX, topY, leftX, topY, WHITE);
-	DrawLine(rightX, bottomY, leftX, bottomY, WHITE);
 	checkKey();
 
 	enemyProcessing();
@@ -264,6 +279,7 @@ void Game::mainLoop() {
 	enemyShotMoving();
 
 	collisionProcessing();
+	bgProcessing();
 
 	bgDrawing();
 	player->draw();

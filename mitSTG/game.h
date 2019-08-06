@@ -16,7 +16,8 @@ private:
 	Player *player;
 	
 	Stage stage;
-	int bgHandle;
+	const IMG *bgImg;
+	int bgY, scrollSpeed;
 	int leftX, rightX, topY, bottomY;		// for drawing area
 	
 	Direction keyDirection;
@@ -50,6 +51,7 @@ private:
 	void enemyShotMoving();
 	void playerShotMoving();
 
+	void bgProcessing();
 	void collisionProcessing();
 
 	void bgDrawing();
@@ -57,7 +59,7 @@ private:
 	void enemyDrawing();
 
 public:
-	Game(Player *player, const char *stagePath, int bgHandle, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
+	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
 	~Game();
 
 	void mainLoop();
