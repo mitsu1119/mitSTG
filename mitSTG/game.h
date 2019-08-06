@@ -7,6 +7,8 @@
 #include "collision.h"
 #include "STG.h"
 
+#define WHITE GetColor(255, 255, 255)
+
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
@@ -14,6 +16,7 @@ private:
 	Player *player;
 	
 	Stage stage;
+	int bgHandle;
 	int leftX, rightX, topY, bottomY;		// for drawing area
 	
 	Direction keyDirection;
@@ -49,11 +52,12 @@ private:
 
 	void collisionProcessing();
 
+	void bgDrawing();
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
 
 public:
-	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
+	Game(Player *player, const char *stagePath, int bgHandle, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
 	~Game();
 
 	void mainLoop();

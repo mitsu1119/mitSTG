@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, int bgHandle, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), bgHandle(bgHandle), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -99,6 +99,7 @@ void Game::playerShotMoving() {
 			harfX = int(playerShotPool[i]->getImageSize().getX() / 2.0);
 			harfY = int(playerShotPool[i]->getImageSize().getY() / 2.0);
 			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
+				// destroy player shot
 				playerShotPoolFlags[i] = false;
 			}
 		}
@@ -133,6 +134,7 @@ void Game::enemyShotMoving() {
 			harfX = int(shotPool[i]->getImageSize().getX() / 2.0);
 			harfY = int(shotPool[i]->getImageSize().getY() / 2.0);
 			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
+				// destroy enemy shot
 				shotPoolFlags[i] = false;
 			}
 		}
@@ -222,6 +224,10 @@ void Game::collisionProcessing() {
 	}
 }
 
+void Game::bgDrawing() {
+	DrawGraph(0, 0, bgHandle, true);
+}
+
 void Game::playerAndEnemyShotDrawing() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i] == true) {
@@ -244,6 +250,10 @@ void Game::enemyDrawing() {
 void Game::mainLoop() {
 	ClearDrawScreen();
 	counter++;
+	DrawLine(leftX, topY, leftX, bottomY, WHITE);
+	DrawLine(rightX, topY, rightX, bottomY, WHITE);
+	DrawLine(rightX, topY, leftX, topY, WHITE);
+	DrawLine(rightX, bottomY, leftX, bottomY, WHITE);
 	checkKey();
 
 	enemyProcessing();
@@ -255,6 +265,7 @@ void Game::mainLoop() {
 
 	collisionProcessing();
 
+	bgDrawing();
 	player->draw();
 	enemyDrawing();
 	playerAndEnemyShotDrawing();
