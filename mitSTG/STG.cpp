@@ -25,7 +25,7 @@ std::string Shot::getMovePattern() const {
 }
 
 void Shot::draw() const {
-	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle - M_PI / 2, image->getHandle(), true);
+	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ ShotMover::ShotMover(const Player *player): player(player) {
 
 void ShotMover::player1(Shot *shot) {
 	shot->moveY(shot->speed);
-	shot->angle = M_PI / 2.0;
+	shot->angle = -M_PI / 2.0;
 	shot->counter++;
 }
 
