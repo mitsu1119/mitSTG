@@ -1,2 +1,2 @@
-imageName,playerName
-player1.png,redBox
+#imageName,playerName,shape
+player1.png,redBox,rect

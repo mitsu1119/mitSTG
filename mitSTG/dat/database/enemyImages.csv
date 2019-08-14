@@ -1,2 +1,2 @@
-imageName,enemyName
-enemy1.png,blueBox
+#imageName,enemyName,shape
+enemy1.png,blueBox,rect
