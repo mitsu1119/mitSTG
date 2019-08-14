@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY): player(player), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -28,7 +28,7 @@ Game::Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages
 	while(getline(ifs, buf)) {
 		// stage enemys data
 		parsed = split_str(buf, ',');
-		stage.emplace_back(enemyImages.at(parsed[0]), std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stod(parsed[6]), std::stoi(parsed[7]), std::stoi(parsed[3]), shotImages.at(parsed[4]));
+		stage.emplace_back(std::get<CHDB_IMG>(enemyDB.at(parsed[0])), std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stod(parsed[6]), std::stoi(parsed[7]), std::stoi(parsed[3]), std::get<CHDB_IMG>(shotDB.at(parsed[4])));
 	}
 	bgY = bottomY - bgImg->getSizeY();
 	ifs.close();

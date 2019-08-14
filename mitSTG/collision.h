@@ -28,6 +28,7 @@ public:
 	const Point *getCenter() const;
 	double getRadius() const;
 };
+typedef std::unordered_map<std::string, const Shape *> ShapeDataBase;
 
 // ----------------------------- Collision -----------------------------------------------------------
 class ShapeCollider {

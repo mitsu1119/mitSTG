@@ -5,15 +5,16 @@ TODO: Write function for display error messages
 
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include <string>
 #include "DxLib.h"
 #include "STG.h"
 #include "game.h"
 #include "util.h"
 
-IMGDataBase playerImages;
-IMGDataBase enemyImages;
-IMGDataBase shotImages;
+CharDataBase players;
+CharDataBase enemys;
+CharDataBase shots;
 int loading();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -27,8 +28,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Point WndCenter(((double)rect.right - (double)rect.left) / 2.0, ((double)rect.bottom - (double)rect.top) / 2.0);
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, "player1", -18.0, 8, playerImages["redBox"], shotImages["playerShot"]);
-	Game game(&player, "dat\\stage\\stage1.csv", enemyImages, shotImages, 0, 0, rect.right, rect.bottom);
+	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), std::get<CHDB_IMG>(shots["playerShot"]));
+	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}
@@ -41,33 +42,36 @@ int loading() {
 	std::string buf;
 	std::vector<std::string> parsed;
 	// --------------------------------------------- Loading Database ---------------------------------------------------------
-	// player images
-	std::ifstream ifs("dat\\database\\playerImages.csv");
+	// players
+	std::ifstream ifs("dat\\database\\playerDB.csv");
 	if(ifs.fail()) return -1;	
-	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		playerImages[parsed[1]] = new IMG(("dat\\image\\player\\" + parsed[0]).c_str());
+		std::get<CHDB_IMG>(players[parsed[0]]) = new IMG(("dat\\image\\player\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[2];
 	}
 	ifs.close();
 
-	// enemy images
-	ifs.open("dat\\database\\enemyImages.csv");
+	// enemys
+	ifs.open("dat\\database\\enemyDB.csv");
 	if(ifs.fail()) return -1;
-	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		enemyImages[parsed[1]] = new IMG(("dat\\image\\enemy\\" + parsed[0]).c_str());
+		std::get<CHDB_IMG>(enemys[parsed[0]]) = new IMG(("dat\\image\\enemy\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(enemys[parsed[0]]) = parsed[2];
 	}
 	ifs.close();
 
 	// shot images
-	ifs.open("dat\\database\\shotImages.csv");
+	ifs.open("dat\\database\\shotDB.csv");
 	if(ifs.fail()) return -1;
-	getline(ifs, buf);		// skip one line
 	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		shotImages[parsed[1]] = new IMG(("dat\\image\\shot\\" + parsed[0]).c_str());
+		std::get<CHDB_IMG>(shots[parsed[0]]) = new IMG(("dat\\image\\shot\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(shots[parsed[0]]) = parsed[2];
 	}
 	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------

@@ -9,6 +9,11 @@
 
 #define WHITE GetColor(255, 255, 255)
 
+typedef std::unordered_map<std::string, std::tuple<const IMG *, std::string>> CharDataBase;
+enum CharDBAccessor {
+	CHDB_IMG, CHDB_SHAPE
+};
+
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
@@ -59,7 +64,7 @@ private:
 	void enemyDrawing();
 
 public:
-	Game(Player *player, const char *stagePath, const IMGDataBase &enemyImages, const IMGDataBase &shotImages, int leftX, int topY, int rightX, int bottomY);
+	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY);
 	~Game();
 
 	void mainLoop();

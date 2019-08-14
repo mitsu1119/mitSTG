@@ -33,10 +33,10 @@ private:
 	int sizeX, sizeY;
 
 public:
+	IMG();
 	IMG(const char *path);
 
 	int getSizeX() const;
 	int getSizeY() const;
 	int getHandle() const;
 };
-typedef std::unordered_map<std::string, const IMG *> IMGDataBase;

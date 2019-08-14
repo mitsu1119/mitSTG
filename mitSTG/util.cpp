@@ -79,6 +79,12 @@ IMG::IMG(const char *path) {
 	GetGraphSize(handle, &sizeX, &sizeY);
 }
 
+IMG::IMG() {
+	handle = 0;
+	sizeX = 0;
+	sizeY = 0;
+}
+
 int IMG::getSizeX() const {
 	return sizeX;
 }
