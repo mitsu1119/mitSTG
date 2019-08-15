@@ -36,11 +36,20 @@ Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, c
 
 Game::~Game() {
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPool[i] != nullptr) delete enemyPool[i];
+		if(enemyPool[i] != nullptr) {
+			delete enemyPool[i]->getShapePt();
+			delete enemyPool[i];
+		}
 	}
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
-		if(shotPool[i] != nullptr) delete shotPool[i];
-		if(playerShotPool[i] != nullptr) delete playerShotPool[i];
+		if(shotPool[i] != nullptr) {
+			delete shotPool[i]->getShapePt();
+			delete shotPool[i];
+		}
+		if(playerShotPool[i] != nullptr) {
+			delete playerShotPool[i]->getShapePt();
+			delete playerShotPool[i];
+		}
 	}
 
 	delete smover;
@@ -90,6 +99,24 @@ void Game::destroyEnemyPool(size_t index) {
 	}
 }
 
+void Game::destroyEshotPool(size_t index) {
+	if(shotPoolFlags[index] == true) {
+		delete shotPool[index]->getShapePt();
+		delete shotPool[index];
+		shotPool[index] = nullptr;
+		shotPoolFlags[index] = false;
+	}
+}
+
+void Game::destroyPshotPool(size_t index) {
+	if(playerShotPoolFlags[index] == true) {
+		delete playerShotPool[index]->getShapePt();
+		delete playerShotPool[index];
+		playerShotPool[index] = nullptr;
+		playerShotPoolFlags[index] = false;
+	}
+}
+
 void Game::playerKeyProcessing() {
 	if(keyDirection != CENTER) player->move(keyDirection);
 	if(checkKeyPShotBt) playerShotFlagProcessing();
@@ -97,10 +124,22 @@ void Game::playerKeyProcessing() {
 
 void Game::playerShotFlagProcessing() {
 	// flag on
+	Shape *pshotShape;
+	double initPx = 0, initPy = 0, pshotHarfX = 0, pshotHarfY = 0;
+
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(playerShotPoolFlags[i] == false && counter - timeOfLastPShot > player->getShotInterval()) {
-			if(playerShotPool[i] != nullptr) delete playerShotPool[i];
-			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), player->getShotImage(), 0, enemyPool[0]);
+			initPx = player->getPointPt()->getX();
+			initPy = player->getPointPt()->getY();
+			pshotHarfX = std::get<CHDB_IMG>(shotDB.at(player->getShotName()))->getSizeX() / 2.0;
+			pshotHarfY = std::get<CHDB_IMG>(shotDB.at(player->getShotName()))->getSizeY() / 2.0;
+			if(std::get<CHDB_SHAPE>(shotDB.at(player->getShotName())) == "rect") {
+				pshotShape = new Shape(initPx - pshotHarfX, initPy - pshotHarfY, initPx + pshotHarfX, initPy + pshotHarfY);
+			} else {
+				pshotShape = new Shape(initPx, initPy, 10);
+			}
+
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), pshotShape, 0, enemyPool[0]);
 			playerShotPoolFlags[i] = true;
 			timeOfLastPShot = counter;
 			break;
@@ -119,8 +158,7 @@ void Game::playerShotMoving() {
 			harfX = int(playerShotPool[i]->getImageSize().getX() / 2.0);
 			harfY = int(playerShotPool[i]->getImageSize().getY() / 2.0);
 			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
-				// destroy player shot
-				playerShotPoolFlags[i] = false;
+				destroyPshotPool(i);
 			}
 		}
 	}
@@ -128,12 +166,22 @@ void Game::playerShotMoving() {
 
 void Game::enemyShotFlagProcessing() {
 	// flag on
+	Shape *eshotShape;
+	double initEx = 0, initEy = 0, eshotHarfX = 0, eshotHarfY = 0;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
-					if(shotPool[j] != nullptr) delete shotPool[j];
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), enemyPool[i]->getShotImage(), enemyPool[i]->getShotCnt());
+					initEx = enemyPool[i]->getPoint().getX();
+					initEy = enemyPool[i]->getPoint().getY();
+					eshotHarfX = std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName()))->getSizeX() / 2.0;
+					eshotHarfY = std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName()))->getSizeY() / 2.0;
+					if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
+						eshotShape = new Shape(initEx - eshotHarfX, initEy - eshotHarfY, initEx + eshotHarfX, initEy + eshotHarfY);
+					} else {
+						eshotShape = new Shape(initEx, initEy, 10);
+					}
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, enemyPool[i]->getShotCnt());
 					shotPoolFlags[j] = true;
 					enemyPool[i]->incShotCnt();
 					break;
@@ -155,7 +203,7 @@ void Game::enemyShotMoving() {
 			harfY = int(shotPool[i]->getImageSize().getY() / 2.0);
 			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
 				// destroy enemy shot
-				shotPoolFlags[i] = false;
+				destroyEshotPool(i);
 			}
 		}
 	}
@@ -178,7 +226,7 @@ void Game::enemyProcessing() {
 						enemShape = new Shape(poolInitPx - enemHarfX, poolInitPy - enemHarfY, poolInitPx + enemHarfX, poolInitPy + enemHarfY);
 					else
 						enemShape = new Shape(poolInitPx, poolInitPy, 10);
-					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, std::get<CHDB_IMG>(shotDB.at(poolShotName)));
+					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName);
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;
 					break;
@@ -207,16 +255,10 @@ void Game::collisionProcessing() {
 
 	// enemy and player shots
 	bool delFlag = false;
-	const Point *pShotPt;
-	Shape *sPshot;
-	double pShotHarfX, pShotHarfY;
-
+	const Shape *sPshot;
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(playerShotPoolFlags[i] == true) {
-			pShotPt = playerShotPool[i]->getPointPt();
-			pShotHarfX = playerShotPool[i]->getImageSize().getX() / 2.0;
-			pShotHarfY = playerShotPool[i]->getImageSize().getY() / 2.0;
-			sPshot = new Shape(pShotPt->getX() - pShotHarfX, pShotPt->getY() - pShotHarfY, pShotPt->getX() + pShotHarfX, pShotPt->getY() + pShotHarfY);
+			sPshot = playerShotPool[i]->getShapePt();
 			// enemys
 			for(size_t j = 0; j < MAX_ENEMY_DISP; j++) {
 				if(enemyPoolFlags[j] == true) {
@@ -231,7 +273,6 @@ void Game::collisionProcessing() {
 				playerShotPoolFlags[i] = false;
 				delFlag = false;
 			}
-			delete sPshot;
 		}
 	}
 }

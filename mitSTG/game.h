@@ -48,6 +48,8 @@ private:
 	StagePart getNextEnemyData();
 	int getNextEnemyTiming();
 	void destroyEnemyPool(size_t index);
+	void destroyEshotPool(size_t index);
+	void destroyPshotPool(size_t index);
 
 	void playerKeyProcessing();
 	void enemyProcessing();

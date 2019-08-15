@@ -1,11 +1,15 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, int number, const Character *target): point(point), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), target(target) {
+Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), target(target) {
 }
 
 Point Shot::getImageSize() const {
 	return Point(image->getSizeX(), image->getSizeY());
+}
+
+const Shape *Shot::getShapePt() const {
+	return shape;
 }
 
 const Point *Shot::getPointPt() const {
@@ -75,7 +79,7 @@ void ShotMover::swirl(Shot *shot) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotImage(shotImage), counter(0) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0) {
 }
 
 Point Character::getPoint() const {
@@ -94,8 +98,8 @@ const IMG *Character::getImage() const {
 	return image;
 }
 
-const IMG *Character::getShotImage() const {
-	return shotImage;
+std::string Character::getShotName() const {
+	return shotName;
 }
 
 std::string Character::getShotPattern() const{
@@ -128,7 +132,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName) {
 }
 
 void Player::move(Direction dir) {
@@ -137,12 +141,13 @@ void Player::move(Direction dir) {
 	point.moveY(-1 * speed * sin(dir * M_PI / 4));
 	
 	double playerHarfX = image->getSizeX() / 2.0, playerHarfY = image->getSizeY() / 2.0;
-	shape->resetCoord(point.getX() - playerHarfX, point.getY() - playerHarfY, point.getX() + playerHarfX, point.getY() + playerHarfY);
+	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - playerHarfX, point.getY() - playerHarfY, point.getX() + playerHarfX, point.getY() + playerHarfY);
+	else shape->resetCoord(point.getX(), point.getY());
 }
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName), shotCnt(0) {
 }
 
 void Enemy::move(Direction dir) {

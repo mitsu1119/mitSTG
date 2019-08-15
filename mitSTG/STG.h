@@ -26,6 +26,7 @@ class Shot {
 friend ShotMover;
 private:
 	Point point;
+	Shape *shape;
 	const IMG *image;
 	std::string movePattern;
 	double speed, angle;
@@ -37,9 +38,10 @@ private:
 	int number;
 
 public:
-	Shot(Point point, double speed, std::string movePattern, const IMG *image, int number = 0, const Character *target = nullptr);
+	Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number = 0, const Character *target = nullptr);
 
 	Point getImageSize() const;
+	const Shape *getShapePt() const;
 	const Point *getPointPt() const;
 	void moveX(double dx);
 	void moveY(double dy);
@@ -74,12 +76,12 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName);
 	
 	Point point;
 	Shape *shape;
-	const IMG *image, *shotImage;
-	std::string shotPattern;
+	const IMG *image;
+	std::string shotName, shotPattern;
 	double speed, shotSpeed;
 	int counter, shotInterval;
 
@@ -90,7 +92,7 @@ public:
 	const Shape *getShapePt() const;
 	const Point *getPointPt() const;
 	const IMG *getImage() const;
-	const IMG *getShotImage() const;
+	std::string getShotName() const;
 	std::string getShotPattern() const;
 	double getSpeed() const;
 	double getShotSpeed() const;
@@ -103,7 +105,7 @@ public:
 // player
 class Player: public Character {
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName);
 
 	virtual void move(Direction dir);
 };
@@ -115,7 +117,7 @@ private:
 	int shotCnt;
 
 public:
-	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
+	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage);
 
 	virtual void move(Direction dir);
 	void incShotCnt();
