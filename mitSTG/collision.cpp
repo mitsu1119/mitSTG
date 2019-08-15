@@ -42,6 +42,15 @@ double Shape::getRadius() const {
 	return radius;
 }
 
+void Shape::resetCoord(double left, double top, double right, double bottom) {
+	this->left = left, this->top = top, this->right = right, this->bottom = bottom;
+}
+
+void Shape::resetCoord(double centerX, double centerY) {
+	center.setX(centerX);
+	center.setY(centerY);
+}
+
 // ----------------------------------------------- Collision ---------------------------------------------------
 ShapeCollider::ShapeCollider() {
 	colliderTable = std::vector<std::vector<CFUNC>>(SHAPE_NUMBER, std::vector<CFUNC>(SHAPE_NUMBER));
@@ -51,18 +60,18 @@ ShapeCollider::ShapeCollider() {
 	colliderTable[CIRCLE_SHAPE][RECT_SHAPE] = &ShapeCollider::RectAndCircle;
 }
 
-bool ShapeCollider::RectAndRect(const Shape &s1, const Shape &s2) {
+bool ShapeCollider::RectAndRect(const Shape &s1, const Shape &s2) const{
 	if(s1.getRight() < s2.getLeft() || s1.getLeft() > s2.getRight() || s1.getBottom() < s2.getTop() || s1.getTop() > s2.getBottom()) return false;
 	return true;
 }
 
-bool ShapeCollider::CircleAndCircle(const Shape &s1, const Shape &s2) {
+bool ShapeCollider::CircleAndCircle(const Shape &s1, const Shape &s2) const {
 	const Point *c1 = s1.getCenter(), *c2 = s2.getCenter();
 	if(std::pow(c1->getX() - c2->getX(), 2) + std::pow(c1->getY() - c2->getY(), 2) <= std::pow(s1.getRadius() + s2.getRadius(), 2)) return true;
 	return false;
 }
 
-bool ShapeCollider::RectAndCircle(const Shape &s1, const Shape &s2) {
+bool ShapeCollider::RectAndCircle(const Shape &s1, const Shape &s2) const {
 	const Point *c1;
 	double xc, yc, r;
 	double x1, x2, y1, y2;

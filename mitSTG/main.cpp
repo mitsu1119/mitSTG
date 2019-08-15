@@ -10,6 +10,7 @@ TODO: Write function for display error messages
 #include "DxLib.h"
 #include "STG.h"
 #include "game.h"
+#include "collision.h"
 #include "util.h"
 
 CharDataBase players;
@@ -28,7 +29,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Point WndCenter(((double)rect.right - (double)rect.left) / 2.0, ((double)rect.bottom - (double)rect.top) / 2.0);
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	Player player(WndCenter.getX(), (double)rect.bottom - 100,  5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), std::get<CHDB_IMG>(shots["playerShot"]));
+	double initPx = WndCenter.getX(), initPy = (double)rect.bottom - 100;
+	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), (std::get<CHDB_SHAPE>(players["redBox"]) == "rect") ? Shape(initPx - std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy - std::get<CHDB_IMG>(players["redBox"])->getSizeY(), initPx + std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy + std::get<CHDB_IMG>(players["redBox"])->getSizeY()) : Shape(initPx, initPy, 10), std::get<CHDB_IMG>(shots["playerShot"]));
 	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();

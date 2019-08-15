@@ -7,14 +7,15 @@
 #include <tuple>
 #include <unordered_map>
 #include "util.h"
+#include "collision.h"
 #include "DxLib.h"
 
 // -------------------------------------------------------- Stage -------------------------------------------------------------------
 // stage[0][STG_ENEMYIMG] => 1th enemy's image
-typedef std::tuple<const IMG *, double, double, std::string, double, int, int, const IMG *> StagePart;
+typedef std::tuple<std::string, double, double, std::string, double, int, int, std::string> StagePart;
 typedef std::vector<StagePart> Stage;
 enum StageAccessing {
-	STA_ENEMYIMG, STA_INITPX, STA_INITPY, STA_SPATTERN, STA_SPEED, STA_INTERVAL, STA_TIMING, STA_SHOTIMG
+	STA_ENEMYNAME, STA_INITPX, STA_INITPY, STA_SPATTERN, STA_SPEED, STA_INTERVAL, STA_TIMING, STA_SHOTNAME
 };
 // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -73,9 +74,10 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
 	
 	Point point;
+	Shape shape;
 	const IMG *image, *shotImage;
 	std::string shotPattern;
 	double speed, shotSpeed;
@@ -85,6 +87,7 @@ public:
 	virtual void move(Direction dir) = 0;
 
 	Point getPoint() const;
+	const Shape *getShapePt() const;
 	const Point *getPointPt() const;
 	const IMG *getImage() const;
 	const IMG *getShotImage() const;
@@ -100,7 +103,7 @@ public:
 // player
 class Player: public Character {
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
 
 	virtual void move(Direction dir);
 };
@@ -112,10 +115,10 @@ private:
 	int shotCnt;
 
 public:
-	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, const IMG *shotImage);
+	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
 
 	virtual void move(Direction dir);
 	void incShotCnt();
-	int getShotCnt();
+	int getShotCnt() const;
 };
 // ---------------------------------------------------------------------------------------------------------------------------------

@@ -27,18 +27,21 @@ public:
 	double getBottom() const;
 	const Point *getCenter() const;
 	double getRadius() const;
+
+	void resetCoord(double left, double top, double right, double bottom);
+	void resetCoord(double centerX, double centerY);
 };
 typedef std::unordered_map<std::string, const Shape *> ShapeDataBase;
 
 // ----------------------------- Collision -----------------------------------------------------------
 class ShapeCollider {
 private:
-	typedef bool(ShapeCollider:: *CFUNC)(const Shape &s1, const Shape &s2);
+	typedef bool(ShapeCollider:: *CFUNC)(const Shape &s1, const Shape &s2) const;
 	std::vector<std::vector<CFUNC>> colliderTable;
 
-	bool RectAndRect(const Shape &s1, const Shape &s2);
-	bool CircleAndCircle(const Shape &s1, const Shape &s2);
-	bool RectAndCircle(const Shape &s1, const Shape &s2);
+	bool RectAndRect(const Shape &s1, const Shape &s2) const;
+	bool CircleAndCircle(const Shape &s1, const Shape &s2) const;
+	bool RectAndCircle(const Shape &s1, const Shape &s2) const;
 
 public:
 	ShapeCollider();

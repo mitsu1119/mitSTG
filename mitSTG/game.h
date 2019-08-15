@@ -19,6 +19,7 @@ constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
 private:
 	Player *player;
+	const CharDataBase &enemDB, &shotDB;
 	
 	Stage stage;
 	const IMG *bgImg;
