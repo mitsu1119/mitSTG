@@ -47,6 +47,7 @@ private:
 
 	StagePart getNextEnemyData();
 	int getNextEnemyTiming();
+	void destroyEnemyPool(size_t index);
 
 	void playerKeyProcessing();
 	void enemyProcessing();

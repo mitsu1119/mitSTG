@@ -30,7 +30,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	double initPx = WndCenter.getX(), initPy = (double)rect.bottom - 100;
-	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), (std::get<CHDB_SHAPE>(players["redBox"]) == "rect") ? Shape(initPx - std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy - std::get<CHDB_IMG>(players["redBox"])->getSizeY(), initPx + std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy + std::get<CHDB_IMG>(players["redBox"])->getSizeY()) : Shape(initPx, initPy, 10), std::get<CHDB_IMG>(shots["playerShot"]));
+	Shape *pShape;
+	if(std::get<CHDB_SHAPE>(players["redBox"]) == "rect") 
+		pShape = new Shape(initPx - std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy - std::get<CHDB_IMG>(players["redBox"])->getSizeY(), initPx + std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy + std::get<CHDB_IMG>(players["redBox"])->getSizeY());
+	else
+		pShape = new Shape(initPx, initPy, 10);
+
+	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), pShape, std::get<CHDB_IMG>(shots["playerShot"]));
 	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();

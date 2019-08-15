@@ -75,7 +75,7 @@ void ShotMover::swirl(Shot *shot) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotImage(shotImage), counter(0) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotImage(shotImage), counter(0) {
 }
 
 Point Character::getPoint() const {
@@ -83,7 +83,7 @@ Point Character::getPoint() const {
 }
 
 const Shape *Character::getShapePt() const {
-	return &shape;
+	return shape;
 }
 
 const Point *Character::getPointPt() const {
@@ -128,7 +128,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage) {
 }
 
 void Player::move(Direction dir) {
@@ -137,12 +137,12 @@ void Player::move(Direction dir) {
 	point.moveY(-1 * speed * sin(dir * M_PI / 4));
 	
 	double playerHarfX = image->getSizeX() / 2.0, playerHarfY = image->getSizeY() / 2.0;
-	shape.resetCoord(point.getX() - playerHarfX, point.getY() - playerHarfY, point.getX() + playerHarfX, point.getY() + playerHarfY);
+	shape->resetCoord(point.getX() - playerHarfX, point.getY() - playerHarfY, point.getX() + playerHarfX, point.getY() + playerHarfY);
 }
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotImage), shotCnt(0) {
 }
 
 void Enemy::move(Direction dir) {

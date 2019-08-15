@@ -74,10 +74,10 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
 	
 	Point point;
-	Shape shape;
+	Shape *shape;
 	const IMG *image, *shotImage;
 	std::string shotPattern;
 	double speed, shotSpeed;
@@ -103,7 +103,7 @@ public:
 // player
 class Player: public Character {
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
 
 	virtual void move(Direction dir);
 };
@@ -115,7 +115,7 @@ private:
 	int shotCnt;
 
 public:
-	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape shape, const IMG *shotImage);
+	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, const IMG *shotImage);
 
 	virtual void move(Direction dir);
 	void incShotCnt();

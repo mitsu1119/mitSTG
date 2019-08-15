@@ -2,10 +2,10 @@
 
 // ----------------------------------------- RectShape -------------------------------------------------
 
-Shape::Shape(double left, double top, double right, double bottom): left(left), top(top), right(right), bottom(bottom), shapeType(RECT_SHAPE) {
+Shape::Shape(double left, double top, double right, double bottom): left(left), top(top), right(right), bottom(bottom), radius(0), shapeType(RECT_SHAPE) {
 }
 
-Shape::Shape(double centerX, double centerY, double radius): center(Point(centerX, centerY)), radius(radius), shapeType(CIRCLE_SHAPE) {
+Shape::Shape(double centerX, double centerY, double radius): center(Point(centerX, centerY)), left(0), top(0), right(0), bottom(0), radius(radius), shapeType(CIRCLE_SHAPE) {
 }
 
 ShapeType Shape::getType() const {
