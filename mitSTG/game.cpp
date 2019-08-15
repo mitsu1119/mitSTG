@@ -147,7 +147,7 @@ void Game::playerShotFlagProcessing() {
 				pshotShape = new Shape(initPx, initPy, 10);
 			}
 
-			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), pshotShape, 0, enemyPool[0]);
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
 			playerShotPoolFlags[i] = true;
 			timeOfLastPShot = counter;
 			break;
@@ -189,7 +189,7 @@ void Game::enemyShotFlagProcessing() {
 					} else {
 						eshotShape = new Shape(initEx, initEy, 10);
 					}
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, enemyPool[i]->getShotCnt());
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
 					shotPoolFlags[j] = true;
 					enemyPool[i]->incShotCnt();
 					break;
@@ -234,7 +234,7 @@ void Game::enemyProcessing() {
 						enemShape = new Shape(poolInitPx - enemHarfX, poolInitPy - enemHarfY, poolInitPx + enemHarfX, poolInitPy + enemHarfY);
 					else
 						enemShape = new Shape(poolInitPx, poolInitPy, 21);
-					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName);
+					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;
 					break;
@@ -273,6 +273,7 @@ void Game::collisionProcessing() {
 					sEnem = enemyPool[j]->getShapePt();
 					if(collider->operator()(*sPshot, *sEnem)) {
 						delFlag = true;
+						if(enemyPool[j]->damaged(playerShotPool[i]->getPower()) <= 0) destroyEnemyPool(j);
 						break;
 					}
 				}

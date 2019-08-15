@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), target(target) {
+Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int power, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), damagePower(power), target(target) {
 }
 
 void Shot::updateShape() const {
@@ -32,6 +32,10 @@ void Shot::moveY(double dy) {
 
 std::string Shot::getMovePattern() const {
 	return movePattern;
+}
+
+int Shot::getPower() const {
+	return damagePower;
 }
 
 void Shot::draw() const {
@@ -163,13 +167,18 @@ void Player::move(Direction dir) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName), shotCnt(0), HP(HP) {
 }
 
 void Enemy::move(Direction dir) {
 	counter++;
 
 	updateShape();
+}
+
+int Enemy::damaged(int damageValue) {
+	HP -= damageValue;
+	return HP;
 }
 
 void Enemy::incShotCnt() {

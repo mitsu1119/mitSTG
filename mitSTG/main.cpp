@@ -62,6 +62,7 @@ int loading() {
 		parsed = split_str(buf, ',');
 		std::get<CHDB_IMG>(players[parsed[0]]) = new IMG(("dat\\image\\player\\" + parsed[1]).c_str());
 		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[2];
+		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 5;
 	}
 	ifs.close();
 
@@ -73,6 +74,7 @@ int loading() {
 		parsed = split_str(buf, ',');
 		std::get<CHDB_IMG>(enemys[parsed[0]]) = new IMG(("dat\\image\\enemy\\" + parsed[1]).c_str());
 		std::get<CHDB_SHAPE>(enemys[parsed[0]]) = parsed[2];
+		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 10;
 	}
 	ifs.close();
 
@@ -84,6 +86,7 @@ int loading() {
 		parsed = split_str(buf, ',');
 		std::get<CHDB_IMG>(shots[parsed[0]]) = new IMG(("dat\\image\\shot\\" + parsed[1]).c_str());
 		std::get<CHDB_SHAPE>(shots[parsed[0]]) = parsed[2];
+		std::get<CHDB_HP_OR_POWER>(shots[parsed[0]]) = 1;
 	}
 	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------

@@ -9,9 +9,9 @@
 
 #define WHITE GetColor(255, 255, 255)
 
-typedef std::unordered_map<std::string, std::tuple<const IMG *, std::string>> CharDataBase;
+typedef std::unordered_map<std::string, std::tuple<const IMG *, std::string, int>> CharDataBase;
 enum CharDBAccessor {
-	CHDB_IMG, CHDB_SHAPE
+	CHDB_IMG, CHDB_SHAPE, CHDB_HP_OR_POWER
 };
 
 constexpr size_t MAX_ENEMY_DISP = 20;

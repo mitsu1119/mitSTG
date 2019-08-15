@@ -34,13 +34,18 @@ private:
 
 	const Character *target;
 
+	// Damage value to the enemy when the owner is player.
+	int damagePower;
+
 	// The number of bullet shot by an enemy
 	int number;
 
 	void updateShape() const;
 
 public:
-	Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number = 0, const Character *target = nullptr);
+	// power: For player shot.
+	// number, target: For enemy shot.
+	Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int power = 0, int number = 0, const Character *target = nullptr);
 
 	Point getImageSize() const;
 	const Shape *getShapePt() const;
@@ -48,6 +53,7 @@ public:
 	void moveX(double dx);
 	void moveY(double dy);
 	std::string getMovePattern() const;
+	int getPower() const;
 	void draw() const;
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -122,11 +128,13 @@ class Enemy: public Character {
 private:
 	// The number of bullets shot by this enemy
 	int shotCnt;
+	int HP;
 
 public:
-	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage);
+	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage, int HP);
 
 	virtual void move(Direction dir);
+	int damaged(int damageValue);
 	void incShotCnt();
 	int getShotCnt() const;
 };
