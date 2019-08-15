@@ -31,16 +31,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	double initPx = WndCenter.getX(), initPy = (double)rect.bottom - 100;
 	Shape *pShape;
-	if(std::get<CHDB_SHAPE>(players["redBox"]) == "rect") 
-		pShape = new Shape(initPx - std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy - std::get<CHDB_IMG>(players["redBox"])->getSizeY(), initPx + std::get<CHDB_IMG>(players["redBox"])->getSizeX(), initPy + std::get<CHDB_IMG>(players["redBox"])->getSizeY());
+	double playerHarfX = std::get<CHDB_IMG>(players["Shirokami_chann"])->getSizeX() / 2.0;
+	double playerHarfY = std::get<CHDB_IMG>(players["Shirokami_chann"])->getSizeY() / 2.0;
+	if(std::get<CHDB_SHAPE>(players["Shirokami_chann"]) == "rect") 
+		pShape = new Shape(initPx - playerHarfX, initPy - playerHarfY, initPx + playerHarfX, initPy + playerHarfY);
 	else
 		pShape = new Shape(initPx, initPy, 10);
 
-	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["redBox"]), pShape, "playerShot");
+	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), pShape, "Varistor");
 	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}
+
+	delete pShape;
 
 	DxLib_End();
 	return 0;

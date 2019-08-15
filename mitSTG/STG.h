@@ -37,6 +37,8 @@ private:
 	// The number of bullet shot by an enemy
 	int number;
 
+	void updateShape() const;
+
 public:
 	Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number = 0, const Character *target = nullptr);
 
@@ -68,6 +70,7 @@ public:
 
 	void operator ()(Shot *shot) {
 		(this->*moveFuncTable[shot->getMovePattern()])(shot);
+		shot->updateShape();
 	}
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -85,8 +88,12 @@ protected:
 	double speed, shotSpeed;
 	int counter, shotInterval;
 
+	void updateShape();
+
 public:
 	virtual void move(Direction dir) = 0;
+
+	void setCoord(double x, double y);
 
 	Point getPoint() const;
 	const Shape *getShapePt() const;

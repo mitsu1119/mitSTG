@@ -75,14 +75,14 @@ bool ShapeCollider::RectAndCircle(const Shape &s1, const Shape &s2) const {
 	const Point *c1;
 	double xc, yc, r;
 	double x1, x2, y1, y2;
-	if(s1.getType() == RECT_SHAPE) {
+	if(s1.getType() == CIRCLE_SHAPE) {
 		c1 = s1.getCenter();
 		xc = c1->getX(), yc = c1->getY(), r = s1.getRadius();
 		x1 = s2.getLeft(), x2 = s2.getRight(), y1 = s2.getTop(), y2 = s2.getBottom();
 	} else {
 		c1 = s2.getCenter();
 		xc = c1->getX(), yc = c1->getY(), r = s2.getRadius();
-		x1 = s1.getLeft(), x2 = s2.getRight(), y1 = s1.getTop(), y2 = s1.getBottom();
+		x1 = s1.getLeft(), x2 = s1.getRight(), y1 = s1.getTop(), y2 = s1.getBottom();
 	}
 
 	if(xc > x1 && xc < x2 && yc > y1 - r && yc < y2 + r) return true;
@@ -91,5 +91,5 @@ bool ShapeCollider::RectAndCircle(const Shape &s1, const Shape &s2) const {
 	if(std::pow(x2 - xc, 2) + std::pow(y1 - yc, 2) < std::pow(r, 2)) return true;
 	if(std::pow(x2 - xc, 2) + std::pow(y2 - yc, 2) < std::pow(r, 2)) return true;
 	if(std::pow(x1 - xc, 2) + std::pow(y2 - yc, 2) < std::pow(r, 2)) return true;
-	return false;
+	return false;;
 }

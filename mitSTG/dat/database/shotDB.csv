@@ -1,3 +1,3 @@
 #imageName,shotName,shape
-greenBox,shot1.png,rect
-playerShot,shot2.png,rect
+Rocket,rocket.png,rect
+Varistor,varistor.png,rect

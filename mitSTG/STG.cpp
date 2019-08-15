@@ -4,6 +4,12 @@
 Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), target(target) {
 }
 
+void Shot::updateShape() const {
+	double harfX = image->getSizeX() / 2.0, harfY = image->getSizeY() / 2.0;
+	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
+	else shape->resetCoord(point.getX(), point.getY());
+}
+
 Point Shot::getImageSize() const {
 	return Point(image->getSizeX(), image->getSizeY());
 }
@@ -82,6 +88,18 @@ void ShotMover::swirl(Shot *shot) {
 Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0) {
 }
 
+void Character::updateShape() {
+	double harfX = image->getSizeX() / 2.0, harfY = image->getSizeY() / 2.0;
+	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
+	else shape->resetCoord(point.getX(), point.getY());
+}
+
+void Character::setCoord(double x, double y) {
+	point.setX(x);
+	point.setY(y);
+	updateShape();
+}
+
 Point Character::getPoint() const {
 	return point;
 }
@@ -139,10 +157,8 @@ void Player::move(Direction dir) {
 	if(dir == CENTER) return;
 	point.moveX(speed * cos(dir * M_PI / 4));
 	point.moveY(-1 * speed * sin(dir * M_PI / 4));
-	
-	double playerHarfX = image->getSizeX() / 2.0, playerHarfY = image->getSizeY() / 2.0;
-	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - playerHarfX, point.getY() - playerHarfY, point.getX() + playerHarfX, point.getY() + playerHarfY);
-	else shape->resetCoord(point.getX(), point.getY());
+
+	updateShape();
 }
 // -------------------------------------------------------------------------------------
 
@@ -152,6 +168,8 @@ Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern
 
 void Enemy::move(Direction dir) {
 	counter++;
+
+	updateShape();
 }
 
 void Enemy::incShotCnt() {

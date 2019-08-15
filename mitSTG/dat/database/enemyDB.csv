@@ -1,2 +1,2 @@
 #enemyName,imageName,shape
-blueBox,enemy1.png,rect
+Sphere,sphere.png,circle
