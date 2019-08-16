@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY): player(player), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY): player(player), playerOriginalSpeed(player->getSpeed()), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -76,8 +76,16 @@ void Game::checkKey() {
 			keyDirection = CENTER;
 		}
 
-		if(padkey & PAD_INPUT_A) checkKeyPShotBt = true;
+		if(padkey & PAD_INPUT_4) checkKeyPShotBt = true;
 		else checkKeyPShotBt = false;
+
+		if(padkey & PAD_INPUT_1) checkKeyLowPlayer = true;
+		else checkKeyLowPlayer = false;
+}
+
+void Game::drawShape(const Shape &shape) {
+	if(shape.getType() == RECT_SHAPE) DrawBox((int)shape.getRight(), (int)shape.getTop(), (int)shape.getLeft(), (int)shape.getBottom(), GREEN, true);
+	else DrawCircle((int)shape.getCenter()->getX(), (int)shape.getCenter()->getY(), (int)shape.getRadius(), RED);
 }
 
 StagePart Game::getNextEnemyData() {
@@ -128,6 +136,8 @@ void Game::playerKeyProcessing() {
 		else if(player->getPointPt()->getY() + harfY / 2.0 > bottomY) player->setCoord(player->getPointPt()->getX(), bottomY - harfY / 2.0);
 	}
 	if(checkKeyPShotBt) playerShotFlagProcessing();
+	if(checkKeyLowPlayer) player->setSpeed(playerOriginalSpeed * 0.6);
+	else player->setSpeed(playerOriginalSpeed);
 }
 
 void Game::playerShotFlagProcessing() {
@@ -330,6 +340,19 @@ void Game::enemyDrawing() {
 	}
 }
 
+void Game::shapeDrawing() {
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPoolFlags[i]) drawShape(*enemyPool[i]->getShapePt());
+	}
+
+	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
+		if(shotPoolFlags[i]) drawShape(*shotPool[i]->getShapePt());
+		if(playerShotPoolFlags[i]) drawShape(*playerShotPool[i]->getShapePt());
+	}
+
+	drawShape(*player->getShapePt());
+}
+
 void Game::mainLoop() {
 	ClearDrawScreen();
 	counter++;
@@ -349,5 +372,8 @@ void Game::mainLoop() {
 	player->draw();
 	enemyDrawing();
 	playerAndEnemyShotDrawing();
+
+	// shapeDrawing();
+
 	ScreenFlip();
 }

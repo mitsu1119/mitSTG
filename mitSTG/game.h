@@ -8,6 +8,8 @@
 #include "STG.h"
 
 #define WHITE GetColor(255, 255, 255)
+#define RED GetColor(255, 0, 0)
+#define GREEN GetColor(0, 255, 0)
 
 typedef std::unordered_map<std::string, std::tuple<const IMG *, std::string, double, double, int>> CharDataBase;
 enum CharDBAccessor {
@@ -19,6 +21,7 @@ constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
 private:
 	Player *player;
+	double playerOriginalSpeed;
 	const CharDataBase &enemDB, &shotDB;
 	
 	Stage stage;
@@ -27,7 +30,7 @@ private:
 	int leftX, rightX, topY, bottomY;		// for drawing area
 	
 	Direction keyDirection;
-	bool checkKeyPShotBt;
+	bool checkKeyPShotBt, checkKeyLowPlayer;
 	int timeOfLastPShot;
 	
 	std::vector<Enemy *> enemyPool;
@@ -44,6 +47,9 @@ private:
 
 	// store the key direction entered in keyDirection
 	void checkKey();
+
+	// For debug
+	void drawShape(const Shape &shape);
 
 	StagePart getNextEnemyData();
 	int getNextEnemyTiming();
@@ -66,6 +72,7 @@ private:
 	void bgDrawing();
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
+	void shapeDrawing();		// debug
 
 public:
 	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY);

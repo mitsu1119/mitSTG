@@ -101,7 +101,7 @@ int loading() {
 	}
 	ifs.close();
 
-	// shot images
+	// shots
 	ifs.open("dat\\database\\shotDB.csv");
 	if(ifs.fail()) return -1;
 	while(getline(ifs, buf)) {

@@ -164,6 +164,10 @@ void Player::move(Direction dir) {
 
 	updateShape();
 }
+
+void Player::setSpeed(double newSpeed) {
+	speed = newSpeed;
+}
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------

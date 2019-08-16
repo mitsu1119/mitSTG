@@ -121,6 +121,8 @@ public:
 	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName);
 
 	virtual void move(Direction dir);
+
+	void setSpeed(double newSpeed);
 };
 
 // enemy
