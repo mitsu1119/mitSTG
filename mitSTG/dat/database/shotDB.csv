@@ -1,3 +1,3 @@
-#imageName,shotName,shape
-Rocket,rocket.png,rect
-Varistor,varistor.png,rect
+#imageName,shotName,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
+Rocket,rocket.png,rect,ImageSizeX,ImageSizeY
+Varistor,varistor.png,rect,ImageSizeX,ImageSizeY

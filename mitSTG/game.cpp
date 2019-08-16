@@ -133,18 +133,18 @@ void Game::playerKeyProcessing() {
 void Game::playerShotFlagProcessing() {
 	// flag on
 	Shape *pshotShape;
-	double initPx = 0, initPy = 0, pshotHarfX = 0, pshotHarfY = 0;
+	double initPx = 0, initPy = 0, harfshapesize1 = 0, harfshapesize2 = 0;
 
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(playerShotPoolFlags[i] == false && counter - timeOfLastPShot > player->getShotInterval()) {
 			initPx = player->getPointPt()->getX();
 			initPy = player->getPointPt()->getY();
-			pshotHarfX = std::get<CHDB_IMG>(shotDB.at(player->getShotName()))->getSizeX() / 2.0;
-			pshotHarfY = std::get<CHDB_IMG>(shotDB.at(player->getShotName()))->getSizeY() / 2.0;
+			harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(player->getShotName())) / 2.0;
+			harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(player->getShotName())) / 2.0;
 			if(std::get<CHDB_SHAPE>(shotDB.at(player->getShotName())) == "rect") {
-				pshotShape = new Shape(initPx - pshotHarfX, initPy - pshotHarfY, initPx + pshotHarfX, initPy + pshotHarfY);
+				pshotShape = new Shape(initPx - harfshapesize1, initPy - harfshapesize2, initPx + harfshapesize1, initPy + harfshapesize2);
 			} else {
-				pshotShape = new Shape(initPx, initPy, 10);
+				pshotShape = new Shape(initPx, initPy, harfshapesize1);
 			}
 
 			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
@@ -175,19 +175,19 @@ void Game::playerShotMoving() {
 void Game::enemyShotFlagProcessing() {
 	// flag on
 	Shape *eshotShape;
-	double initEx = 0, initEy = 0, eshotHarfX = 0, eshotHarfY = 0;
+	double initEx = 0, initEy = 0, harfshapesize1 = 0, harfshapesize2 = 0;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
 			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
 				if(shotPoolFlags[j] == false) {
 					initEx = enemyPool[i]->getPoint().getX();
 					initEy = enemyPool[i]->getPoint().getY();
-					eshotHarfX = std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName()))->getSizeX() / 2.0;
-					eshotHarfY = std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName()))->getSizeY() / 2.0;
+					harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
+					harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
 					if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
-						eshotShape = new Shape(initEx - eshotHarfX, initEy - eshotHarfY, initEx + eshotHarfX, initEy + eshotHarfY);
+						eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
 					} else {
-						eshotShape = new Shape(initEx, initEy, 10);
+						eshotShape = new Shape(initEx, initEy, harfshapesize1);
 					}
 					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
 					shotPoolFlags[j] = true;
@@ -219,7 +219,7 @@ void Game::enemyShotMoving() {
 
 void Game::enemyProcessing() {
 	// flag on
-	double enemHarfX = 0, enemHarfY = 0;
+	double harfshapesize1 = 0, harfshapesize2 = 0;
 	while(true) {
 		if(counter == getNextEnemyTiming()) {
 			// create enemy in the enemy pool
@@ -228,12 +228,12 @@ void Game::enemyProcessing() {
 			Shape *enemShape;
 			for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 				if(enemyPoolFlags[i] == false) {
-					enemHarfX = std::get<CHDB_IMG>(enemDB.at(poolEnemyName))->getSizeX() / 2.0;
-					enemHarfY = std::get<CHDB_IMG>(enemDB.at(poolEnemyName))->getSizeY() / 2.0;
+					harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(enemDB.at(poolEnemyName)) / 2.0;
+					harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(enemDB.at(poolEnemyName)) / 2.0;
 					if(std::get<CHDB_SHAPE>(enemDB.at(poolEnemyName)) == "rect")
-						enemShape = new Shape(poolInitPx - enemHarfX, poolInitPy - enemHarfY, poolInitPx + enemHarfX, poolInitPy + enemHarfY);
+						enemShape = new Shape(poolInitPx - harfshapesize1, poolInitPy - harfshapesize2, poolInitPx + harfshapesize1, poolInitPy + harfshapesize2);
 					else
-						enemShape = new Shape(poolInitPx, poolInitPy, 21);
+						enemShape = new Shape(poolInitPx, poolInitPy, harfshapesize1);
 					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;

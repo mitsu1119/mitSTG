@@ -1,2 +1,2 @@
-#playerName,imageName,shape
-Shirokami_chann,shirokami.png,rect
+#playerName,imageName,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
+Shirokami_chann,shirokami.png,rect,ImageSizeX,ImageSizeY
