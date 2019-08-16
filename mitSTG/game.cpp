@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY): player(player), playerOriginalSpeed(player->getSpeed()), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerOriginalSpeed(player->getSpeed()), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0), lifeImg(lifeImg) {
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -321,6 +321,12 @@ void Game::bgDrawing() {
 	} while(bgYbuf >= -bgImg->getSizeY());
 }
 
+void Game::systemDrawing() {
+	for(int i = 0; i < player->damaged(0); i++) {
+		DrawGraph(10 * (i + 1) + lifeImg->getSizeX() * i, 10, lifeImg->getHandle(), true);
+	}
+}
+
 void Game::playerAndEnemyShotDrawing() {
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i] == true) {
@@ -372,6 +378,8 @@ void Game::mainLoop() {
 	player->draw();
 	enemyDrawing();
 	playerAndEnemyShotDrawing();
+
+	systemDrawing();
 
 	// shapeDrawing();
 

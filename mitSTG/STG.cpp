@@ -89,7 +89,7 @@ void ShotMover::swirl(Shot *shot) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP) {
 }
 
 void Character::updateShape() {
@@ -144,6 +144,11 @@ int Character::getCounter() const {
 	return counter;
 }
 
+int Character::damaged(int damageValue) {
+	HP -= damageValue;
+	return HP;
+}
+
 void Character::info() const {
 	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image->getSizeX(), image->getSizeY());
 }
@@ -154,7 +159,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, maxLife) {
 }
 
 void Player::move(Direction dir) {
@@ -171,18 +176,13 @@ void Player::setSpeed(double newSpeed) {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName), shotCnt(0), HP(HP) {
+Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, HP), shotCnt(0) {
 }
 
 void Enemy::move(Direction dir) {
 	counter++;
 
 	updateShape();
-}
-
-int Enemy::damaged(int damageValue) {
-	HP -= damageValue;
-	return HP;
 }
 
 void Enemy::incShotCnt() {

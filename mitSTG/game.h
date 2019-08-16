@@ -25,7 +25,7 @@ private:
 	const CharDataBase &enemDB, &shotDB;
 	
 	Stage stage;
-	const IMG *bgImg;
+	const IMG *bgImg, *lifeImg;
 	int bgY, scrollSpeed;
 	int leftX, rightX, topY, bottomY;		// for drawing area
 	
@@ -70,12 +70,13 @@ private:
 	void collisionProcessing();
 
 	void bgDrawing();
+	void systemDrawing();
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
 	void shapeDrawing();		// debug
 
 public:
-	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY);
+	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg);
 	~Game();
 
 	void mainLoop();

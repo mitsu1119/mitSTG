@@ -38,8 +38,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	else
 		pShape = new Shape(initPx, initPy, harfshapesize1);
 
-	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), pShape, "Varistor");
-	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom);
+	IMG lifeImg("dat\\image\\system\\life.png");
+
+	Player player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), pShape, "Varistor", 5);
+	Game game(&player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, rect.right, rect.bottom, &lifeImg);
 	while(ProcessMessage() == 0) {
 		game.mainLoop();
 	}

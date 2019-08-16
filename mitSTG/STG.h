@@ -85,14 +85,14 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP);
 	
 	Point point;
 	Shape *shape;
 	const IMG *image;
 	std::string shotName, shotPattern;
 	double speed, shotSpeed;
-	int counter, shotInterval;
+	int counter, shotInterval, HP;
 
 	void updateShape();
 
@@ -100,6 +100,7 @@ public:
 	virtual void move(Direction dir) = 0;
 
 	void setCoord(double x, double y);
+	int damaged(int damageValue);
 
 	Point getPoint() const;
 	const Shape *getShapePt() const;
@@ -118,7 +119,7 @@ public:
 // player
 class Player: public Character {
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife);
 
 	virtual void move(Direction dir);
 
@@ -130,13 +131,11 @@ class Enemy: public Character {
 private:
 	// The number of bullets shot by this enemy
 	int shotCnt;
-	int HP;
 
 public:
 	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage, int HP);
 
 	virtual void move(Direction dir);
-	int damaged(int damageValue);
 	void incShotCnt();
 	int getShotCnt() const;
 };
