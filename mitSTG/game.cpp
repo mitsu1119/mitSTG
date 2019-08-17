@@ -1,6 +1,10 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0), lifeImg(lifeImg) {
+Scene::Scene(): counter(0) {
+}
+
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
+	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
@@ -85,10 +89,10 @@ void Game::checkKey() {
 			keyDirection = CENTER;
 		}
 
-		if(padkey & PAD_INPUT_4) checkKeyPShotBt = true;
+		if(padkey & PAD_INPUT_1) checkKeyPShotBt = true;
 		else checkKeyPShotBt = false;
 
-		if(padkey & PAD_INPUT_1) checkKeyLowPlayer = true;
+		if(padkey & PAD_INPUT_4) checkKeyLowPlayer = true;
 		else checkKeyLowPlayer = false;
 }
 
@@ -427,30 +431,35 @@ void Game::playerDrawing() {
 	if(!playerNonDrawFlag) player->draw();
 }
 
-void Game::mainLoop() {
-	ClearDrawScreen();
+int Game::update() {
 	counter++;
 	checkKey();
 
-	playerProcessing();
-
+	// flag process
+	playerProcessing();		// with player shots processing and player moving processing.
 	enemyProcessing();
-	enemyMoving();
-
 	enemyShotFlagProcessing();
+
+	// move process
+	enemyMoving();
 	playerShotMoving();
 	enemyShotMoving();
 
+	// other process
 	collisionProcessing();
 	bgProcessing();
-
 	animationProcessing();
+
+	return 0;
+}
+
+void Game::draw() {
+	ClearDrawScreen();
 
 	bgDrawing();
 	playerDrawing();
 	enemyDrawing();
 	playerAndEnemyShotDrawing();
-
 	systemDrawing();
 
 	// shapeDrawing();
@@ -458,12 +467,10 @@ void Game::mainLoop() {
 	ScreenFlip();
 }
 
-void Scene::animation() {
-}
-
+// ------------------------------- TitleScene class --------------------------------------------------
 TitleScene::TitleScene(): drawPressxkeyFlag(true) {
 	int pressxkeybuf[9];
-	count = 0;
+	counter = 0;
 	backGround = new IMG("dat\\image\\title\\bg.png");
 	LoadDivGraph("dat\\image\\title\\Pressxkey.png", 9, 9, 1, 50, 50, pressxkeybuf);
 	for(size_t i = 0; i < 9; i++) pressXKey.emplace_back(new IMG(pressxkeybuf[i]));
@@ -475,10 +482,18 @@ TitleScene::~TitleScene() {
 }
 
 void TitleScene::animation() {
-	if(count % 120 < 60) drawPressxkeyFlag = true;
+	if(counter % 120 < 60) drawPressxkeyFlag = true;
 	else drawPressxkeyFlag = false;
+}
 
-	count++;
+int TitleScene::update() {
+	animation();
+
+	int padkey = GetJoypadInputState(DX_INPUT_KEY_PAD1);
+	if(padkey & PAD_INPUT_1) return 1;
+
+	counter++;
+	return 0;
 }
 
 void TitleScene::draw() {
@@ -496,3 +511,136 @@ void TitleScene::draw() {
 
 	ScreenFlip();
 }
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------- SceneManager class -----------------------------------------------
+MitSTG::MitSTG() {
+	nowScene = nullptr;
+	nowSceneType = SCENE_TITLE;
+
+	loading();
+
+	GetClientRect(GetMainWindowHandle(), &wndArea);
+	Point WndCenter(((double)wndArea.right - (double)wndArea.left) / 2.0, ((double)wndArea.bottom - (double)wndArea.top) / 2.0);
+
+	// Create player datas.
+	double harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(players["Shirokami_chann"]) / 2.0;
+	double harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(players["Shirokami_chann"]) / 2.0;
+	initPx = WndCenter.getX(), initPy = (double)wndArea.bottom - 100;
+	if(std::get<CHDB_SHAPE>(players["Shirokami_chann"]) == "rect")
+		pShape = new Shape(initPx - harfshapesize1, initPy - harfshapesize2, initPx + harfshapesize1, initPy + harfshapesize2);
+	else
+		pShape = new Shape(initPx, initPy, harfshapesize1);
+	playerDeathEffectImg = new IMG("dat\\image\\effect\\playerDeathEffect.png");
+	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
+
+	// Create other datas.
+	lifeImg = new IMG("dat\\image\\system\\life.png");
+
+	changeScene(SCENE_TITLE);
+}
+
+MitSTG::~MitSTG() {
+	if(nowScene != nullptr) delete nowScene;
+}
+
+int MitSTG::loading() {
+	std::string buf;
+	std::vector<std::string> parsed;
+	double shapeDataBuf;
+	// --------------------------------------------- Loading Database ---------------------------------------------------------
+	// players
+	std::ifstream ifs("dat\\database\\playerDB.csv");
+	if(ifs.fail()) return -1;
+	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
+		parsed = split_str(buf, ',');
+		std::get<CHDB_IMG>(players[parsed[0]]) = new IMG(("dat\\image\\player\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[2];
+
+		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeX();
+		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[3]);
+		std::get<CHDB_SHAPE_DATA1>(players[parsed[0]]) = shapeDataBuf;
+
+		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeX();
+		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[4]);
+		std::get<CHDB_SHAPE_DATA2>(players[parsed[0]]) = shapeDataBuf;
+
+		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 5;
+	}
+	ifs.close();
+
+	// enemys
+	ifs.open("dat\\database\\enemyDB.csv");
+	if(ifs.fail()) return -1;
+	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
+		parsed = split_str(buf, ',');
+		std::get<CHDB_IMG>(enemys[parsed[0]]) = new IMG(("dat\\image\\enemy\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(enemys[parsed[0]]) = parsed[2];
+
+		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeX();
+		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[3]);
+		std::get<CHDB_SHAPE_DATA1>(enemys[parsed[0]]) = shapeDataBuf;
+
+		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeX();
+		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[4]);
+		std::get<CHDB_SHAPE_DATA2>(enemys[parsed[0]]) = shapeDataBuf;
+
+		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 10;
+	}
+	ifs.close();
+
+	// shots
+	ifs.open("dat\\database\\shotDB.csv");
+	if(ifs.fail()) return -1;
+	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
+		parsed = split_str(buf, ',');
+		std::get<CHDB_IMG>(shots[parsed[0]]) = new IMG(("dat\\image\\shot\\" + parsed[1]).c_str());
+		std::get<CHDB_SHAPE>(shots[parsed[0]]) = parsed[2];
+
+		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeX();
+		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[3]);
+		std::get<CHDB_SHAPE_DATA1>(shots[parsed[0]]) = shapeDataBuf;
+
+		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeX();
+		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeY();
+		else shapeDataBuf = std::stod(parsed[4]);
+		std::get<CHDB_SHAPE_DATA2>(shots[parsed[0]]) = shapeDataBuf;
+
+		std::get<CHDB_HP_OR_POWER>(shots[parsed[0]]) = 1;
+	}
+	ifs.close();
+	// --------------------------------------------------------------------------------------------------------------------------
+
+	return 0;
+}
+
+void MitSTG::changeScene(SceneType scene) {
+	if(nowScene != nullptr) delete nowScene;
+	nowSceneType = scene;
+	switch(scene) {
+	case SCENE_TITLE:
+		nowScene = new TitleScene();
+		break;
+	case SCENE_GAME_1:
+		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, wndArea.right, wndArea.bottom, lifeImg);
+		break;
+	}
+}
+
+void MitSTG::update() {
+	int updateValue = nowScene->update();
+	if(nowSceneType == SCENE_TITLE && updateValue == 1) changeScene(SCENE_GAME_1);
+}
+
+void MitSTG::draw() {
+	nowScene->draw();
+}
+// ----------------------------------------------------------------------------------------------------
