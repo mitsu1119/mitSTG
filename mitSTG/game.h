@@ -24,7 +24,10 @@ constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
 private:
 	Player *player;
+	int playerInvincibleFlag;			// Invincible mode start time. If player is not invinceble, this value is -1.
 	double playerOriginalSpeed;
+	bool playerNonDrawFlag;
+
 	const CharDataBase &enemDB, &shotDB;
 	
 	Stage stage;
@@ -67,6 +70,7 @@ private:
 	void destroyPshotPool(size_t index);
 
 	void playerKeyProcessing();
+	void playerProcessing();
 	void enemyProcessing();
 
 	void enemyShotFlagProcessing();
@@ -83,6 +87,7 @@ private:
 	void systemDrawing();
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();
+	void playerDrawing();
 	void shapeDrawing();		// debug
 
 public:

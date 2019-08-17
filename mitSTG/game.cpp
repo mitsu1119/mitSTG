@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerOriginalSpeed(player->getSpeed()), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0), lifeImg(lifeImg) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0), lifeImg(lifeImg) {
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
@@ -160,6 +160,11 @@ void Game::playerKeyProcessing() {
 	if(checkKeyPShotBt) playerShotFlagProcessing();
 	if(checkKeyLowPlayer) player->setSpeed(playerOriginalSpeed * 0.6);
 	else player->setSpeed(playerOriginalSpeed);
+}
+
+void Game::playerProcessing() {
+	playerKeyProcessing();
+	if(playerInvincibleFlag != -1 && counter - playerInvincibleFlag > 100) playerInvincibleFlag = -1;
 }
 
 void Game::playerShotFlagProcessing() {
@@ -326,7 +331,9 @@ void Game::collisionProcessing() {
 			sPlayer = player->getShapePt();
 			if(collider->operator()(*sEshot, *sPlayer)) {
 				destroyEshotPool(i);
+				if(playerInvincibleFlag != -1) continue;
 				player->damaged(1);
+				playerInvincibleFlag = counter;
 				effectIndex = searchAddableEffectPool();
 				if(effectIndex == 0 && effectPoolFlags[0] == true) continue;			// Full of effectPool
 				effectPoolFlags[effectIndex] = true;
@@ -342,6 +349,10 @@ void Game::animationProcessing() {
 	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
 		if(effectPoolFlags[i]  && effectPool[i]->areAllEffectsOutOfArea(leftX, topY, rightX, bottomY)) destroyEffectPool(i);
 	}
+
+	// Invincible player blinking
+	if(playerInvincibleFlag != -1 && (counter - playerInvincibleFlag) % 4 < 2) playerNonDrawFlag = true;
+	else playerNonDrawFlag = false;
 }
 
 void Game::bgProcessing() {
@@ -399,13 +410,17 @@ void Game::shapeDrawing() {
 	drawShape(*player->getShapePt());
 }
 
+void Game::playerDrawing() {
+	if(!playerNonDrawFlag) player->draw();
+}
+
 void Game::mainLoop() {
 	ClearDrawScreen();
 	counter++;
 	checkKey();
 
 	enemyProcessing();
-	playerKeyProcessing();
+	playerProcessing();
 	enemyShotFlagProcessing();
 
 	playerShotMoving();
@@ -417,7 +432,7 @@ void Game::mainLoop() {
 	animationProcessing();
 
 	bgDrawing();
-	player->draw();
+	playerDrawing();
 	enemyDrawing();
 	playerAndEnemyShotDrawing();
 
