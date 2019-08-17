@@ -98,3 +98,27 @@ public:
 
 	void mainLoop();
 };
+
+class Scene {
+protected:
+	int count;
+	const IMG *backGround;
+	void animation();
+
+public:
+	virtual void draw() = 0;
+};
+
+class TitleScene: public Scene {
+private:
+	bool drawPressxkeyFlag;
+	std::vector<const IMG *> pressXKey;
+	
+public:
+	TitleScene();
+	~TitleScene();
+
+	void animation();
+	virtual void draw();
+};
+

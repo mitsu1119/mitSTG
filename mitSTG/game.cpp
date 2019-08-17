@@ -457,3 +457,42 @@ void Game::mainLoop() {
 
 	ScreenFlip();
 }
+
+void Scene::animation() {
+}
+
+TitleScene::TitleScene(): drawPressxkeyFlag(true) {
+	int pressxkeybuf[9];
+	count = 0;
+	backGround = new IMG("dat\\image\\title\\bg.png");
+	LoadDivGraph("dat\\image\\title\\Pressxkey.png", 9, 9, 1, 50, 50, pressxkeybuf);
+	for(size_t i = 0; i < 9; i++) pressXKey.emplace_back(new IMG(pressxkeybuf[i]));
+}
+
+TitleScene::~TitleScene() {
+	delete backGround;
+	for(auto &i: pressXKey) delete i;
+}
+
+void TitleScene::animation() {
+	if(count % 120 < 60) drawPressxkeyFlag = true;
+	else drawPressxkeyFlag = false;
+
+	count++;
+}
+
+void TitleScene::draw() {
+	ClearDrawScreen();
+	
+	// bg
+	DrawGraph(0, 0, backGround->getHandle(), true);
+
+	// Press x key
+	if(drawPressxkeyFlag) {
+		for(size_t i = 0; i < 5; i++) DrawGraph(90 - 22 * (int)i + pressXKey[i]->getSizeX() * (int)i, 480, pressXKey[i]->getHandle(), true);
+		DrawGraph(250, 480, pressXKey[5]->getHandle(), true);
+		for(size_t i = 6; i < pressXKey.size(); i++) DrawGraph(300 - 22 * (int)(i - 6) + pressXKey[i]->getSizeX() * (int)(i - 6), 480, pressXKey[i]->getHandle(), true);
+	}
+
+	ScreenFlip();
+}

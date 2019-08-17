@@ -35,6 +35,7 @@ private:
 public:
 	IMG();
 	IMG(const char *path);
+	IMG(int imageHandle);
 
 	int getSizeX() const;
 	int getSizeY() const;

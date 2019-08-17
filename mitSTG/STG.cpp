@@ -226,7 +226,7 @@ void Effect::drawNextMove() {
 		image = std::get<EFAC_IMG>(i);
 		harfX = image->getSizeX() / 2.0;
 		harfY = image->getSizeY() / 2.0;
-		DrawGraph(std::get<EFAC_COORD>(i).getX() - harfX, std::get<EFAC_COORD>(i).getY() - harfY, image->getHandle(), true);
+		DrawGraph((int)(std::get<EFAC_COORD>(i).getX() - harfX), (int)(std::get<EFAC_COORD>(i).getY() - harfY), image->getHandle(), true);
 	}
 }
 
