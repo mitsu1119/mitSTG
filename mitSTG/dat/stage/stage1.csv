@@ -2,4 +2,4 @@
 bg1.png,1,,,,,,
 #enemyType,initPx,initPy,timing,shotImage,shotType,shotSpeed,shotInterval
 Sphere,50,100,10,Rocket,swirl,8,1
-Sphere,400,100,10,Rocket,target,5,1
+Sphere,400,100,10,Rocket,target,7,10

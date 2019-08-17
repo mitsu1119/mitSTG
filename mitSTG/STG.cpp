@@ -159,7 +159,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, maxLife) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, maxLife), deathEffectImage(deathEffectImage) {
 }
 
 void Player::move(Direction dir) {
@@ -172,6 +172,10 @@ void Player::move(Direction dir) {
 
 void Player::setSpeed(double newSpeed) {
 	speed = newSpeed;
+}
+
+const IMG *Player::getDeathEffectImage() const {
+	return deathEffectImage;
 }
 // -------------------------------------------------------------------------------------
 
@@ -193,3 +197,43 @@ int Enemy::getShotCnt() const {
 	return shotCnt;
 }
 // -------------------------------------------------------------------------------------
+
+// ----------------------- Effect class -------------------------------------------------
+void Effect::add(double initX, double initY, const IMG *image, double speed, double angle) {
+	moveimages.emplace_back(Point(initX, initY), image, speed, angle);
+}
+
+void Effect::applyNext() {
+	double speed, angle;
+	for(auto &i: moveimages) {
+		speed = std::get<EFAC_SPEED>(i), angle = std::get<EFAC_ANGLE>(i);
+		std::get<EFAC_COORD>(i).moveX(speed * cos(angle));
+		std::get<EFAC_COORD>(i).moveY(speed * sin(angle));
+	}
+}
+
+void Effect::drawNextMove() {
+	const IMG *image;
+	double harfX, harfY;
+	applyNext();
+	for(const auto &i: moveimages) {
+		image = std::get<EFAC_IMG>(i);
+		harfX = image->getSizeX() / 2.0;
+		harfY = image->getSizeY() / 2.0;
+		DrawGraph(std::get<EFAC_COORD>(i).getX() - harfX, std::get<EFAC_COORD>(i).getY() - harfY, image->getHandle(), true);
+	}
+}
+
+bool Effect::areAllEffectsOutOfArea(double areaLeft, double areaTop, double areaRight, double areaBottom) const {
+	const Point *point;
+	double harfX, harfY;
+	if(moveimages.size() == 0) return false;
+	for(const auto &i: moveimages) {
+		point = &std::get<EFAC_COORD>(i);
+		harfX = std::get<EFAC_IMG>(i)->getSizeX() / 2.0;
+		harfY = std::get<EFAC_IMG>(i)->getSizeY() / 2.0;
+		if(point->getX() + harfX >= areaLeft && point->getY() + harfY >= areaTop && point->getX() - harfX <= areaRight && point->getY() - harfY <= areaBottom) return false;
+	}
+	return true;
+}
+// ------------------------------------------------------------------------------------

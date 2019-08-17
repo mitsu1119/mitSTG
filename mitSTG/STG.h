@@ -118,12 +118,16 @@ public:
 
 // player
 class Player: public Character {
+private:
+	const IMG *deathEffectImage;
+
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
 
 	virtual void move(Direction dir);
-
 	void setSpeed(double newSpeed);
+
+	const IMG *getDeathEffectImage() const;
 };
 
 // enemy
@@ -138,5 +142,26 @@ public:
 	virtual void move(Direction dir);
 	void incShotCnt();
 	int getShotCnt() const;
+};
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+// -------------------------------------------------------- Effect ---------------------------------------------------------------
+class Effect {
+private:
+	typedef std::tuple<Point, const IMG *, double, double> MoveEffectElement;
+	enum EffectAccessor {
+		EFAC_COORD, EFAC_IMG, EFAC_SPEED, EFAC_ANGLE
+	};
+	std::vector<MoveEffectElement> moveimages;
+	
+	typedef std::vector<const IMG *> AnimEffectElement;
+
+	void applyNext();
+
+public:
+	void add(double initX, double initY, const IMG * image, double speed, double angle);
+	void drawNextMove();
+
+	bool areAllEffectsOutOfArea(double areaLeft, double areaTop, double areaRight, double areaBottom) const;
 };
 // ---------------------------------------------------------------------------------------------------------------------------------

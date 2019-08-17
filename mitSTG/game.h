@@ -1,9 +1,11 @@
 #pragma once
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <cmath>
 #include "collision.h"
 #include "STG.h"
 
@@ -16,6 +18,7 @@ enum CharDBAccessor {
 	CHDB_IMG, CHDB_SHAPE, CHDB_SHAPE_DATA1, CHDB_SHAPE_DATA2, CHDB_HP_OR_POWER
 };
 
+constexpr size_t MAX_EFFECT_DISP = 5;
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 300;
 class Game {
@@ -33,6 +36,8 @@ private:
 	bool checkKeyPShotBt, checkKeyLowPlayer;
 	int timeOfLastPShot;
 	
+	std::vector<Effect *> effectPool;
+	std::vector<bool> effectPoolFlags;
 	std::vector<Enemy *> enemyPool;
 	std::vector<bool> enemyPoolFlags;
 	std::vector <Shot *> shotPool;
@@ -51,8 +56,12 @@ private:
 	// For debug
 	void drawShape(const Shape &shape);
 
+	// If addable effect pool index was not found, return 0.
+	size_t searchAddableEffectPool() const;
+
 	StagePart getNextEnemyData();
 	int getNextEnemyTiming();
+	void destroyEffectPool(size_t index);
 	void destroyEnemyPool(size_t index);
 	void destroyEshotPool(size_t index);
 	void destroyPshotPool(size_t index);
@@ -68,6 +77,7 @@ private:
 
 	void bgProcessing();
 	void collisionProcessing();
+	void animationProcessing();
 
 	void bgDrawing();
 	void systemDrawing();

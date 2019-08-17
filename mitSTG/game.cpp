@@ -1,6 +1,8 @@
 #include "game.h"
 
 Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerOriginalSpeed(player->getSpeed()), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), counter(0), lifeImg(lifeImg) {
+	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
+	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
 	enemyPool = std::vector<Enemy *>(MAX_ENEMY_DISP, nullptr);
 	enemyPoolFlags = std::vector<bool>(MAX_ENEMY_DISP, false);
 	shotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
@@ -41,6 +43,7 @@ Game::~Game() {
 			delete enemyPool[i];
 		}
 	}
+
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPool[i] != nullptr) {
 			delete shotPool[i]->getShapePt();
@@ -50,6 +53,10 @@ Game::~Game() {
 			delete playerShotPool[i]->getShapePt();
 			delete playerShotPool[i];
 		}
+	}
+
+	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
+		if(effectPool[i] != nullptr) delete effectPool[i];
 	}
 
 	delete smover;
@@ -88,6 +95,13 @@ void Game::drawShape(const Shape &shape) {
 	else DrawCircle((int)shape.getCenter()->getX(), (int)shape.getCenter()->getY(), (int)shape.getRadius(), RED);
 }
 
+size_t Game::searchAddableEffectPool() const {
+	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
+		if(!effectPoolFlags[i]) return i;
+	}
+	return 0;
+}
+
 StagePart Game::getNextEnemyData() {
 	enemCount++;
 	return stage[enemCount - 1];
@@ -96,6 +110,14 @@ StagePart Game::getNextEnemyData() {
 int Game::getNextEnemyTiming() {
 	if(enemCount >= stage.size()) return -1;;
 	return std::get<STA_TIMING>(stage[enemCount]);
+}
+
+void Game::destroyEffectPool(size_t index) {
+	if(effectPoolFlags[index]) {
+		delete effectPool[index];
+		effectPool[index] = nullptr;
+		effectPoolFlags[index] = false;
+	}
 }
 
 void Game::destroyEnemyPool(size_t index) {
@@ -297,14 +319,28 @@ void Game::collisionProcessing() {
 
 	// player and enemy shots
 	const Shape *sEshot;
+	size_t effectIndex;
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i]) {
 			sEshot = shotPool[i]->getShapePt();
 			sPlayer = player->getShapePt();
 			if(collider->operator()(*sEshot, *sPlayer)) {
 				destroyEshotPool(i);
+				player->damaged(1);
+				effectIndex = searchAddableEffectPool();
+				if(effectIndex == 0 && effectPoolFlags[0] == true) continue;			// Full of effectPool
+				effectPoolFlags[effectIndex] = true;
+				effectPool[effectIndex] = new Effect();
+				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), player->getDeathEffectImage(), 8, 2 * M_PI / 30 * j);
 			}
 		}
+	}
+}
+
+void Game::animationProcessing() {
+	// move effect
+	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
+		if(effectPoolFlags[i]  && effectPool[i]->areAllEffectsOutOfArea(leftX, topY, rightX, bottomY)) destroyEffectPool(i);
 	}
 }
 
@@ -322,9 +358,13 @@ void Game::bgDrawing() {
 }
 
 void Game::systemDrawing() {
-	for(int i = 0; i < player->damaged(0); i++) {
-		DrawGraph(10 * (i + 1) + lifeImg->getSizeX() * i, 10, lifeImg->getHandle(), true);
+	// effect
+	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
+		if(effectPoolFlags[i]) effectPool[i]->drawNextMove();
 	}
+
+	// player life
+	for(int i = 0; i < player->damaged(0); i++) DrawGraph(10 * (i + 1) + lifeImg->getSizeX() * i, 10, lifeImg->getHandle(), true);
 }
 
 void Game::playerAndEnemyShotDrawing() {
@@ -373,6 +413,8 @@ void Game::mainLoop() {
 
 	collisionProcessing();
 	bgProcessing();
+
+	animationProcessing();
 
 	bgDrawing();
 	player->draw();
