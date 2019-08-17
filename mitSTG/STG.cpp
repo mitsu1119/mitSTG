@@ -180,13 +180,7 @@ const IMG *Player::getDeathEffectImage() const {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, HP), shotCnt(0) {
-}
-
-void Enemy::move(Direction dir) {
-	counter++;
-
-	updateShape();
+Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, HP), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
 }
 
 void Enemy::incShotCnt() {
@@ -197,6 +191,18 @@ int Enemy::getShotCnt() const {
 	return shotCnt;
 }
 // -------------------------------------------------------------------------------------
+
+// ---------------------- EnemyMover class ---------------------------------------------
+EnemyMover::EnemyMover() {
+	moveFuncTable["straight"] = &EnemyMover::straight;
+}
+
+void EnemyMover::straight(Enemy *enemy) {
+	enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
+	enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	enemy->counter++;
+}
+// ------------------------------------------------------------------------------------------
 
 // ----------------------- Effect class -------------------------------------------------
 void Effect::add(double initX, double initY, const IMG *image, double speed, double angle) {

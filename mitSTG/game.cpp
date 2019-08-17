@@ -10,6 +10,7 @@ Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, c
 	playerShotPool = std::vector<Shot *>(MAX_SHOT_DISP, nullptr);
 	playerShotPoolFlags = std::vector<bool>(MAX_SHOT_DISP, false);
 
+	emover = new EnemyMover();
 	smover = new ShotMover(player);
 	collider = new ShapeCollider();
 
@@ -30,7 +31,7 @@ Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, c
 	while(getline(ifs, buf)) {
 		// stage enemys data
 		parsed = split_str(buf, ',');
-		stage.emplace_back(parsed[0], std::stod(parsed[1]), std::stod(parsed[2]), parsed[5], std::stod(parsed[6]), std::stoi(parsed[7]), std::stoi(parsed[3]), parsed[4]);
+		stage.emplace_back(parsed[0], std::stod(parsed[1]), std::stod(parsed[2]), std::stoi(parsed[3]), parsed[4], std::stod(parsed[5]), std::stod(parsed[6]) * M_PI / 180, parsed[7], parsed[8], std::stod(parsed[9]), std::stoi(parsed[10]));
 	}
 	bgY = bottomY - bgImg->getSizeY();
 	ifs.close();
@@ -59,6 +60,7 @@ Game::~Game() {
 		if(effectPool[i] != nullptr) delete effectPool[i];
 	}
 
+	delete emover;
 	delete smover;
 	delete collider;
 
@@ -254,24 +256,31 @@ void Game::enemyShotMoving() {
 	}
 }
 
+void Game::enemyMoving() {
+	// move
+	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+		if(enemyPoolFlags[i]) emover->operator()(enemyPool[i]);
+	}
+}
+
 void Game::enemyProcessing() {
 	// flag on
 	double harfshapesize1 = 0, harfshapesize2 = 0;
 	while(true) {
 		if(counter == getNextEnemyTiming()) {
-			// create enemy in the enemy pool
-			auto [poolEnemyName, poolInitPx, poolInitPy, poolShotPattern, poolShotSpeed, poolShotInterval, poolTiming, poolShotName] = getNextEnemyData();
+			auto [poolEnemyName, poolInitPx, poolInitPy, poolTiming, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotName, poolShotPattern, poolShotSpeed, poolShotInterval] = getNextEnemyData();
 			Enemy *enem;
 			Shape *enemShape;
 			for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 				if(enemyPoolFlags[i] == false) {
+					// create enemy in the enemy pool
 					harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(enemDB.at(poolEnemyName)) / 2.0;
 					harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(enemDB.at(poolEnemyName)) / 2.0;
 					if(std::get<CHDB_SHAPE>(enemDB.at(poolEnemyName)) == "rect")
 						enemShape = new Shape(poolInitPx - harfshapesize1, poolInitPy - harfshapesize2, poolInitPx + harfshapesize1, poolInitPy + harfshapesize2);
 					else
 						enemShape = new Shape(poolInitPx, poolInitPy, harfshapesize1);
-					enem = new Enemy(poolInitPx, poolInitPy, 10, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
+					enem = new Enemy(poolInitPx, poolInitPy, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;
 					break;
@@ -281,10 +290,14 @@ void Game::enemyProcessing() {
 			break;
 		}
 	}
-
-	// move
+	
+	// If enemy goes outside, destroy the enemy.
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPoolFlags[i]) enemyPool[i]->move(CENTER);
+		if(enemyPoolFlags[i]) {
+			harfshapesize1 = enemyPool[i]->getImage()->getSizeX() / 2.0;
+			harfshapesize2 = enemyPool[i]->getImage()->getSizeY() / 2.0;
+			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 100 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 100 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 100 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 100) destroyEnemyPool(i);
+		}
 	}
 }
 
@@ -419,10 +432,12 @@ void Game::mainLoop() {
 	counter++;
 	checkKey();
 
-	enemyProcessing();
 	playerProcessing();
-	enemyShotFlagProcessing();
 
+	enemyProcessing();
+	enemyMoving();
+
+	enemyShotFlagProcessing();
 	playerShotMoving();
 	enemyShotMoving();
 

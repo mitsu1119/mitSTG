@@ -12,10 +12,10 @@
 
 // -------------------------------------------------------- Stage -------------------------------------------------------------------
 // stage[0][STG_ENEMYIMG] => 1th enemy's image
-typedef std::tuple<std::string, double, double, std::string, double, int, int, std::string> StagePart;
+typedef std::tuple<std::string, double, double, int, std::string, double, double, std::string, std::string, double, int> StagePart;
 typedef std::vector<StagePart> Stage;
 enum StageAccessing {
-	STA_ENEMYNAME, STA_INITPX, STA_INITPY, STA_SPATTERN, STA_SPEED, STA_INTERVAL, STA_TIMING, STA_SHOTNAME
+	STA_ENEMYNAME, STA_INITPX, STA_INITPY, STA_TIMING, STA_MOVEPATTERN, STA_MOVESPEED, STA_MOVEANGLE, STA_SHOTNAME, STA_SHOTPATTERN, STA_SHOTSPEED, STA_SHOTINTERVAL
 };
 // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -97,8 +97,6 @@ protected:
 	void updateShape();
 
 public:
-	virtual void move(Direction dir) = 0;
-
 	void setCoord(double x, double y);
 	int damaged(int damageValue);
 
@@ -124,24 +122,45 @@ private:
 public:
 	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
 
-	virtual void move(Direction dir);
+	void move(Direction dir);
 	void setSpeed(double newSpeed);
 
 	const IMG *getDeathEffectImage() const;
 };
 
 // enemy
+class EnemyMover;
 class Enemy: public Character {
+friend EnemyMover;
 private:
 	// The number of bullets shot by this enemy
 	int shotCnt;
+	
+	std::string movePattern;
+	double moveAngle;
 
 public:
-	Enemy(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage, int HP);
+	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage, int HP);
 
-	virtual void move(Direction dir);
 	void incShotCnt();
+
 	int getShotCnt() const;
+};
+
+class EnemyMover {
+private:
+	typedef void(EnemyMover:: *EFUNC)(Enemy *enemy);
+	std::unordered_map<std::string, EFUNC> moveFuncTable;
+	
+	void straight(Enemy *enemy);
+	
+public:
+	EnemyMover();
+
+	void operator ()(Enemy *enemy) {
+		(this->*moveFuncTable[enemy->movePattern])(enemy);
+		enemy->updateShape();
+	}
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
 

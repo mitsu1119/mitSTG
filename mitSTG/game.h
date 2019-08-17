@@ -47,6 +47,7 @@ private:
 	std::vector<bool> shotPoolFlags;
 	std::vector<Shot *> playerShotPool;
 	std::vector<bool> playerShotPoolFlags;
+	EnemyMover *emover;
 	ShotMover *smover;
 	
 	size_t enemCount;
@@ -76,6 +77,7 @@ private:
 	void enemyShotFlagProcessing();
 	void playerShotFlagProcessing();
 
+	void enemyMoving();
 	void enemyShotMoving();
 	void playerShotMoving();
 
