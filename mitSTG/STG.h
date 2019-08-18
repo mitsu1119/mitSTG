@@ -124,9 +124,12 @@ public:
 class Player: public Character {
 private:
 	const IMG *deathEffectImage;
+	std::vector<const IMG *> centerImage, leftImage, rightImage;
+
+	void changeImage(Direction dir);
 
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
 
 	void move(Direction dir);
 	void setSpeed(double newSpeed);

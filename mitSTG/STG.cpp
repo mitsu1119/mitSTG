@@ -159,11 +159,45 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), deathEffectImage(deathEffectImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), deathEffectImage(deathEffectImage) {
+}
+
+void Player::changeImage(Direction dir) {
+	switch(dir) {
+	case RIGHT:
+		if(image == rightImage) return;
+		image = rightImage;
+		break;
+	case LEFT:
+		if(image == leftImage) return;
+		image = leftImage;
+		break;
+	case CENTER:
+		if(image == centerImage) return;
+		image = centerImage;
+	}
 }
 
 void Player::move(Direction dir) {
+	switch(dir) {
+	case CENTER:
+	case UP:
+	case DOWN:
+		changeImage(CENTER);
+		break;
+	case RUP:
+	case RIGHT:
+	case RDOWN:
+		changeImage(RIGHT);
+		break;
+	case LUP:
+	case LEFT:
+	case LDOWN:
+		changeImage(LEFT);
+	}
+
 	if(dir == CENTER) return;
+
 	point.moveX(speed * cos(dir * M_PI / 4));
 	point.moveY(-1 * speed * sin(dir * M_PI / 4));
 

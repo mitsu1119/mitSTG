@@ -156,7 +156,9 @@ void Game::destroyPshotPool(size_t index) {
 void Game::playerKeyProcessing() {
 	double harfX = player->getImage()->getSizeX() / 2.0;
 	double harfY = player->getImage()->getSizeY() / 2.0;
-	if(keyDirection != CENTER) {
+	if(keyDirection == CENTER) {
+		player->move(CENTER);
+	} else {
 		player->move(keyDirection);
 		if(player->getPointPt()->getX() - harfX / 2.0 < leftX) player->setCoord(leftX + harfX / 2.0, player->getPointPt()->getY());
 		else if(player->getPointPt()->getX() + harfX / 2.0 > rightX) player->setCoord(rightX - harfX / 2.0, player->getPointPt()->getY());
@@ -540,7 +542,7 @@ MitSTG::MitSTG() {
 	else
 		pShape = new Shape(initPx, initPy, harfshapesize1);
 	playerDeathEffectImg = new IMG("dat\\image\\effect\\playerDeathEffect.png");
-	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
+	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
 
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");
@@ -568,21 +570,25 @@ int MitSTG::loading() {
 		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
 
-		divNum = std::stoi(parsed[2]);
+		divNum = std::stoi(parsed[4]);
 
 		loadDivHandles = new int[divNum];
 		GetImageSize_File(("dat\\image\\player\\" + parsed[1]).c_str(), &bufX, &bufY);
 		LoadDivGraph(("dat\\image\\player\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
 		for(size_t i = 0; i < divNum; i++) std::get<CHDB_IMG>(players[parsed[0]]).emplace_back(new IMG(loadDivHandles[i]));
+		LoadDivGraph(("dat\\image\\player\\" + parsed[2]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) playerLeftImages[parsed[0]].emplace_back(new IMG(loadDivHandles[i]));
+		LoadDivGraph(("dat\\image\\player\\" + parsed[3]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) playerRightImages[parsed[0]].emplace_back(new IMG(loadDivHandles[i]));
 
-		std::get<CHDB_ANIM_COUNT>(players[parsed[0]]) = std::stoul(parsed[3]);
+		std::get<CHDB_ANIM_COUNT>(players[parsed[0]]) = std::stoul(parsed[5]);
 
-		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[4];
+		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[6];
 
-		shapeDataBuf = std::stod(parsed[5]);
+		shapeDataBuf = std::stod(parsed[7]);
 		std::get<CHDB_SHAPE_DATA1>(players[parsed[0]]) = shapeDataBuf;
 
-		shapeDataBuf = std::stod(parsed[6]);
+		shapeDataBuf = std::stod(parsed[8]);
 		std::get<CHDB_SHAPE_DATA2>(players[parsed[0]]) = shapeDataBuf;
 
 		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 5;

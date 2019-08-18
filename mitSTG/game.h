@@ -136,6 +136,8 @@ private:
 	Scene *nowScene;
 	SceneType nowSceneType;
 	CharDataBase players;
+	std::unordered_map<std::string, std::vector<const IMG *>> playerLeftImages;
+	std::unordered_map<std::string, std::vector<const IMG *>> playerRightImages;
 	CharDataBase enemys;
 	CharDataBase shots;
 
