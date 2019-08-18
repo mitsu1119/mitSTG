@@ -460,6 +460,8 @@ int Game::update() {
 	bgProcessing();
 	animationProcessing();
 
+	if(player->damaged(0) == 0) return -1;
+
 	return 0;
 }
 
@@ -478,7 +480,7 @@ void Game::draw() {
 }
 
 // ------------------------------- TitleScene class --------------------------------------------------
-TitleScene::TitleScene(): drawPressxkeyFlag(true) {
+TitleScene::TitleScene(): drawPressxkeyFlag(true), isKeyInputableFlag(false) {
 	int pressxkeybuf[9];
 	counter = 0;
 	backGround = new IMG("dat\\image\\title\\bg.png");
@@ -500,7 +502,14 @@ int TitleScene::update() {
 	animation();
 
 	int padkey = GetJoypadInputState(DX_INPUT_KEY_PAD1);
-	if(padkey & PAD_INPUT_1) return 1;
+	if(padkey & PAD_INPUT_1) {
+		if(isKeyInputableFlag) {
+			isKeyInputableFlag = false;
+			return 1;
+		}
+	} else {
+		isKeyInputableFlag = true;
+	}
 
 	counter++;
 	return 0;
@@ -523,8 +532,38 @@ void TitleScene::draw() {
 }
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------- GameOverScene class -----------------------------------------
+GameOverScene::GameOverScene(): isKeyInputableFlag(false) {
+	backGround = new IMG("dat\\image\\title\\gameover.png");
+}
+
+GameOverScene::~GameOverScene() {
+	delete backGround;
+}
+
+int GameOverScene::update() {
+	int padkey = GetJoypadInputState(DX_INPUT_KEY_PAD1);
+	if(padkey & PAD_INPUT_1) {
+		if(isKeyInputableFlag) {
+			isKeyInputableFlag = false;
+			return 1;
+		}
+	} else {
+		isKeyInputableFlag = true;
+	}
+
+	return 0;
+}
+
+void GameOverScene::draw() {
+	ClearDrawScreen();
+	DrawGraph(0, 0, backGround->getHandle(), true);
+	ScreenFlip();
+}
+// --------------------------------------------------------------------------------------------------
+
 // ----------------------------- SceneManager class -----------------------------------------------
-MitSTG::MitSTG() {
+MitSTG::MitSTG(): initPlayerLifeNum(3) {
 	nowScene = nullptr;
 	nowSceneType = SCENE_TITLE;
 
@@ -542,7 +581,7 @@ MitSTG::MitSTG() {
 	else
 		pShape = new Shape(initPx, initPy, harfshapesize1);
 	playerDeathEffectImg = new IMG("dat\\image\\effect\\playerDeathEffect.png");
-	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
+	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", initPlayerLifeNum, playerDeathEffectImg);
 
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");
@@ -661,21 +700,55 @@ int MitSTG::loading() {
 }
 
 void MitSTG::changeScene(SceneType scene) {
-	if(nowScene != nullptr) delete nowScene;
 	nowSceneType = scene;
 	switch(scene) {
 	case SCENE_TITLE:
+		if(nowScene != nullptr) delete nowScene;
 		nowScene = new TitleScene();
 		break;
 	case SCENE_GAME_1:
+		if(nowScene != nullptr) delete nowScene;
 		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, wndArea.right, wndArea.bottom, lifeImg);
+		break;
+	case SCENE_GAMEOVER:
+		Scene *buf = new GameOverScene();
+		for(size_t i = 0; i < 80; i++) {
+			if(nowScene != nullptr) nowScene->draw();
+			ClearDrawScreen();
+			for(size_t j = 0; j < wndArea.right / 20; j++) {
+				int k = j + i - wndArea.right / 20;
+				if(k > 0) {
+					if(k > 20) k = 20;
+					SetDrawArea(wndArea.right - 20 - j * 20, 0, wndArea.right - (j * 20 - k), wndArea.bottom);
+					DrawGraph(0, 0, buf->backGround->getHandle(), false);
+				}
+			}
+			ScreenFlip();
+			SetDrawArea(0, 0, wndArea.right, wndArea.bottom);
+		}
+		if(nowScene != nullptr) delete nowScene;
+		nowScene = buf;
 		break;
 	}
 }
 
 void MitSTG::update() {
 	int updateValue = nowScene->update();
-	if(nowSceneType == SCENE_TITLE && updateValue == 1) changeScene(SCENE_GAME_1);
+
+	switch(nowSceneType) {
+	case SCENE_TITLE:
+		if(updateValue == 1) {
+			player->damaged(player->damaged(0) - initPlayerLifeNum);
+			changeScene(SCENE_GAME_1);
+		}
+		break;
+	case SCENE_GAME_1:
+		if(updateValue == -1) changeScene(SCENE_GAMEOVER);
+		break;
+	case SCENE_GAMEOVER:
+		if(updateValue == 1) changeScene(SCENE_TITLE);
+		break;
+	}
 }
 
 void MitSTG::draw() {

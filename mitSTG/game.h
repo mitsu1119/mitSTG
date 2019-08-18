@@ -18,10 +18,11 @@
 class Scene {
 protected:
 	int counter;
-	const IMG *backGround;
+
 
 public:
 	Scene();
+	const IMG *backGround;
 	virtual int update() = 0;
 	virtual void draw() = 0;
 };
@@ -115,6 +116,7 @@ class TitleScene: public Scene {
 private:
 	bool drawPressxkeyFlag;
 	std::vector<const IMG *> pressXKey;
+	bool isKeyInputableFlag;
 	
 public:
 	TitleScene();
@@ -125,10 +127,22 @@ public:
 	virtual void draw();
 };
 
+class GameOverScene: public Scene {
+private:
+	bool isKeyInputableFlag;
+
+public:
+	GameOverScene();
+	~GameOverScene();
+
+	virtual int update();
+	virtual void draw();
+};
+
 class MitSTG  {
 private:
 	enum SceneType {
-		SCENE_TITLE, SCENE_GAME_1
+		SCENE_TITLE, SCENE_GAME_1, SCENE_GAMEOVER
 	};
 
 	// Meta datas.
@@ -145,6 +159,7 @@ private:
 	Player *player;
 	Shape *pShape;
 	double initPx, initPy;		// There data are the player's initial position when each stage begins.
+	int initPlayerLifeNum;
 	const IMG *playerDeathEffectImg;
 
 	// Other datas.
