@@ -1,6 +1,6 @@
 #include "game.h"
 
-Scene::Scene(): counter(0) {
+Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
 Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
@@ -190,7 +190,7 @@ void Game::playerShotFlagProcessing() {
 				pshotShape = new Shape(initPx, initPy, harfshapesize1);
 			}
 
-			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
 			playerShotPoolFlags[i] = true;
 			timeOfLastPShot = counter;
 			break;
@@ -232,7 +232,7 @@ void Game::enemyShotFlagProcessing() {
 					} else {
 						eshotShape = new Shape(initEx, initEy, harfshapesize1);
 					}
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
+					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
 					shotPoolFlags[j] = true;
 					enemyPool[i]->incShotCnt();
 					break;
@@ -284,7 +284,7 @@ void Game::enemyProcessing() {
 						enemShape = new Shape(poolInitPx - harfshapesize1, poolInitPy - harfshapesize2, poolInitPx + harfshapesize1, poolInitPy + harfshapesize2);
 					else
 						enemShape = new Shape(poolInitPx, poolInitPy, harfshapesize1);
-					enem = new Enemy(poolInitPx, poolInitPy, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
+					enem = new Enemy(poolInitPx, poolInitPy, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), std::get<CHDB_ANIM_COUNT>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;
 					break;
@@ -307,11 +307,20 @@ void Game::enemyProcessing() {
 
 void Game::collisionProcessing() {
 	// enemy and player
+	size_t effectIndex;
 	const Shape *sPlayer = player->getShapePt(), *sEnem;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i]) {
 			sEnem = enemyPool[i]->getShapePt();
-			if(collider->operator()(*sPlayer, *sEnem)) player->move(dirRev(keyDirection));
+			if(collider->operator()(*sPlayer, *sEnem) && playerInvincibleFlag == -1) {
+				player->damaged(1);
+				playerInvincibleFlag = counter;
+				effectIndex = searchAddableEffectPool();
+				if(effectIndex == 0 && effectPoolFlags[0] == true) continue;			// Full of effectPool
+				effectPoolFlags[effectIndex] = true;
+				effectPool[effectIndex] = new Effect();
+				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), player->getDeathEffectImage(), 8, 2 * M_PI / 30 * j);
+			}
 		}
 	}
 	
@@ -341,7 +350,6 @@ void Game::collisionProcessing() {
 
 	// player and enemy shots
 	const Shape *sEshot;
-	size_t effectIndex;
 	for(size_t i = 0; i < MAX_SHOT_DISP; i++) {
 		if(shotPoolFlags[i]) {
 			sEshot = shotPool[i]->getShapePt();
@@ -532,20 +540,24 @@ MitSTG::MitSTG() {
 	else
 		pShape = new Shape(initPx, initPy, harfshapesize1);
 	playerDeathEffectImg = new IMG("dat\\image\\effect\\playerDeathEffect.png");
-	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
+	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", 5, playerDeathEffectImg);
 
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");
 
-	changeScene(SCENE_TITLE);
+	changeScene(SCENE_GAME_1);
 }
 
 MitSTG::~MitSTG() {
 	if(nowScene != nullptr) delete nowScene;
+	delete pShape;
+	delete player;
+	delete lifeImg;
 }
 
 int MitSTG::loading() {
 	std::string buf;
+	int *loadDivHandles, divNum, bufX, bufY;
 	std::vector<std::string> parsed;
 	double shapeDataBuf;
 	// --------------------------------------------- Loading Database ---------------------------------------------------------
@@ -555,20 +567,27 @@ int MitSTG::loading() {
 	while(getline(ifs, buf)) {
 		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		std::get<CHDB_IMG>(players[parsed[0]]) = new IMG(("dat\\image\\player\\" + parsed[1]).c_str());
-		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[2];
 
-		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeX();
-		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[3]);
+		divNum = std::stoi(parsed[2]);
+
+		loadDivHandles = new int[divNum];
+		GetImageSize_File(("dat\\image\\player\\" + parsed[1]).c_str(), &bufX, &bufY);
+		LoadDivGraph(("dat\\image\\player\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) std::get<CHDB_IMG>(players[parsed[0]]).emplace_back(new IMG(loadDivHandles[i]));
+
+		std::get<CHDB_ANIM_COUNT>(players[parsed[0]]) = std::stoul(parsed[3]);
+
+		std::get<CHDB_SHAPE>(players[parsed[0]]) = parsed[4];
+
+		shapeDataBuf = std::stod(parsed[5]);
 		std::get<CHDB_SHAPE_DATA1>(players[parsed[0]]) = shapeDataBuf;
 
-		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeX();
-		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(players[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[4]);
+		shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(players[parsed[0]]) = shapeDataBuf;
 
 		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 5;
+
+		delete[] loadDivHandles;
 	}
 	ifs.close();
 
@@ -578,20 +597,26 @@ int MitSTG::loading() {
 	while(getline(ifs, buf)) {
 		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		std::get<CHDB_IMG>(enemys[parsed[0]]) = new IMG(("dat\\image\\enemy\\" + parsed[1]).c_str());
-		std::get<CHDB_SHAPE>(enemys[parsed[0]]) = parsed[2];
 
-		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeX();
-		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[3]);
+		divNum = std::stoi(parsed[2]);
+
+		loadDivHandles = new int[divNum];
+		GetImageSize_File(("dat\\image\\enemy\\" + parsed[1]).c_str(), &bufX, &bufY);
+		LoadDivGraph(("dat\\image\\enemy\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) std::get<CHDB_IMG>(enemys[parsed[0]]).emplace_back(new IMG(loadDivHandles[i]));
+		
+		std::get<CHDB_ANIM_COUNT>(enemys[parsed[0]]) = std::stoul(parsed[3]);
+
+		std::get<CHDB_SHAPE>(enemys[parsed[0]]) = parsed[4];
+
+		shapeDataBuf = std::stod(parsed[5]);
 		std::get<CHDB_SHAPE_DATA1>(enemys[parsed[0]]) = shapeDataBuf;
 
-		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeX();
-		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(enemys[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[4]);
+		 shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(enemys[parsed[0]]) = shapeDataBuf;
 
 		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 10;
+		delete[] loadDivHandles;
 	}
 	ifs.close();
 
@@ -601,20 +626,27 @@ int MitSTG::loading() {
 	while(getline(ifs, buf)) {
 		if(buf[0] == '#') continue;
 		parsed = split_str(buf, ',');
-		std::get<CHDB_IMG>(shots[parsed[0]]) = new IMG(("dat\\image\\shot\\" + parsed[1]).c_str());
-		std::get<CHDB_SHAPE>(shots[parsed[0]]) = parsed[2];
 
-		if(parsed[3] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeX();
-		else if(parsed[3] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[3]);
+		divNum = std::stoi(parsed[2]);
+
+		loadDivHandles = new int[divNum];
+		GetImageSize_File(("dat\\image\\shot\\" + parsed[1]).c_str(), &bufX, &bufY);
+		LoadDivGraph(("dat\\image\\shot\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) std::get<CHDB_IMG>(shots[parsed[0]]).emplace_back(new IMG(loadDivHandles[i]));
+
+		std::get<CHDB_ANIM_COUNT>(shots[parsed[0]]) = std::stoul(parsed[3]);
+
+		std::get<CHDB_SHAPE>(shots[parsed[0]]) = parsed[4];
+
+		shapeDataBuf = std::stod(parsed[5]);
 		std::get<CHDB_SHAPE_DATA1>(shots[parsed[0]]) = shapeDataBuf;
 
-		if(parsed[4] == "ImageSizeX") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeX();
-		else if(parsed[4] == "ImageSizeY") shapeDataBuf = std::get<CHDB_IMG>(shots[parsed[0]])->getSizeY();
-		else shapeDataBuf = std::stod(parsed[4]);
+		shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(shots[parsed[0]]) = shapeDataBuf;
 
 		std::get<CHDB_HP_OR_POWER>(shots[parsed[0]]) = 1;
+
+		delete[] loadDivHandles;
 	}
 	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------

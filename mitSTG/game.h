@@ -26,9 +26,9 @@ public:
 	virtual void draw() = 0;
 };
 
-typedef std::unordered_map<std::string, std::tuple<const IMG *, std::string, double, double, int>> CharDataBase;
+typedef std::unordered_map<std::string, std::tuple<std::vector<const IMG *>, unsigned long, std::string, double, double, int>> CharDataBase;
 enum CharDBAccessor {
-	CHDB_IMG, CHDB_SHAPE, CHDB_SHAPE_DATA1, CHDB_SHAPE_DATA2, CHDB_HP_OR_POWER
+	CHDB_IMG, CHDB_ANIM_COUNT, CHDB_SHAPE, CHDB_SHAPE_DATA1, CHDB_SHAPE_DATA2, CHDB_HP_OR_POWER
 };
 constexpr size_t MAX_EFFECT_DISP = 5;
 constexpr size_t MAX_ENEMY_DISP = 20;

@@ -1,8 +1,3 @@
-
-/*
-TODO: Write function for display error messages
-*/
-
 #include "DxLib.h"
 #include "game.h"
 

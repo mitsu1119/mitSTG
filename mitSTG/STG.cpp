@@ -1,17 +1,17 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int power, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), damagePower(power), target(target) {
+Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target) {
 }
 
 void Shot::updateShape() const {
-	double harfX = image->getSizeX() / 2.0, harfY = image->getSizeY() / 2.0;
+	double harfX = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, harfY = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0;
 	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
 	else shape->resetCoord(point.getX(), point.getY());
 }
 
 Point Shot::getImageSize() const {
-	return Point(image->getSizeX(), image->getSizeY());
+	return Point(image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX(), image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY());
 }
 
 const Shape *Shot::getShapePt() const {
@@ -39,7 +39,7 @@ int Shot::getPower() const {
 }
 
 void Shot::draw() const {
-	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image->getHandle(), true);
+	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
@@ -89,11 +89,11 @@ void ShotMover::swirl(Shot *shot) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount,  Shape *shape, std::string shotName, int HP): animationNum(image.size()), animationCount(animationCount), point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP) {
 }
 
 void Character::updateShape() {
-	double harfX = image->getSizeX() / 2.0, harfY = image->getSizeY() / 2.0;
+	double harfX = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, harfY = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0;
 	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
 	else shape->resetCoord(point.getX(), point.getY());
 }
@@ -117,7 +117,7 @@ const Point *Character::getPointPt() const {
 }
 
 const IMG *Character::getImage() const {
-	return image;
+	return image[(counter % (animationNum * animationCount)) / animationCount];
 }
 
 std::string Character::getShotName() const {
@@ -150,16 +150,16 @@ int Character::damaged(int damageValue) {
 }
 
 void Character::info() const {
-	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image->getSizeX(), image->getSizeY());
+	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX(), image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY());
 }
 
 void Character::draw() const {
-	DrawGraph(int(point.getX() - (double)image->getSizeX() / 2.0), int(point.getY() - (double)image->getSizeY() / 2.0), image->getHandle(), true);
+	DrawGraph(int(point.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(point.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, maxLife), deathEffectImage(deathEffectImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), deathEffectImage(deathEffectImage) {
 }
 
 void Player::move(Direction dir) {
@@ -180,7 +180,7 @@ const IMG *Player::getDeathEffectImage() const {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, shape, shotName, HP), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
 }
 
 void Enemy::incShotCnt() {

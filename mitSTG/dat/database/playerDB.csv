@@ -1,2 +1,2 @@
-#playerName,imageName,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
-Shirokami_chann,shirokami.png,circle,12,12
+#playerName,imageName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
+Shirokami_chann,shirokami.png,1,1,circle,12,12

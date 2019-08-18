@@ -1,2 +1,2 @@
-#enemyName,imageName,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
-Sphere,sphere.png,circle,ImageSizeX,0
+#enemyName,imageName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
+Sphere,sphere.png,16,3,circle,42,0

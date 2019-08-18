@@ -27,7 +27,10 @@ friend ShotMover;
 private:
 	Point point;
 	Shape *shape;
-	const IMG *image;
+	std::vector<const IMG *> image;
+	size_t animationNum;
+	unsigned long animationCount;
+
 	std::string movePattern;
 	double speed, angle;
 	int counter;
@@ -45,7 +48,7 @@ private:
 public:
 	// power: For player shot.
 	// number, target: For enemy shot.
-	Shot(Point point, double speed, std::string movePattern, const IMG *image, Shape *shape, int power = 0, int number = 0, const Character *target = nullptr);
+	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, int number = 0, const Character *target = nullptr);
 
 	Point getImageSize() const;
 	const Shape *getShapePt() const;
@@ -85,11 +88,14 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int HP);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP);
 	
 	Point point;
 	Shape *shape;
-	const IMG *image;
+	std::vector<const IMG *> image;
+	size_t animationNum;
+	unsigned long animationCount;
+
 	std::string shotName, shotPattern;
 	double speed, shotSpeed;
 	int counter, shotInterval, HP;
@@ -120,7 +126,7 @@ private:
 	const IMG *deathEffectImage;
 
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
 
 	void move(Direction dir);
 	void setSpeed(double newSpeed);
@@ -140,7 +146,7 @@ private:
 	double moveAngle;
 
 public:
-	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, const IMG *image, Shape *shape, std::string shotImage, int HP);
+	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotImage, int HP);
 
 	void incShotCnt();
 
