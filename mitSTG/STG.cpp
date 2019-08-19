@@ -200,7 +200,7 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage, std::vector<Option *> options) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), deathEffectImage(deathEffectImage), options(options) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, std::vector<Option *> options) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), options(options) {
 	for(auto &i: options) i->update(point.getX(), point.getY());
 }
 
@@ -249,10 +249,6 @@ void Player::setSpeed(double newSpeed) {
 	speed = newSpeed;
 }
 
-const IMG *Player::getDeathEffectImage() const {
-	return deathEffectImage;
-}
-
 void Player::draw() {
 	for(auto &i: options) i->update(point.getX(), point.getY());
 	for(const auto &i: options) i->draw();
@@ -286,17 +282,25 @@ void EnemyMover::straight(Enemy *enemy) {
 // ------------------------------------------------------------------------------------------
 
 // ----------------------- Effect class -------------------------------------------------
+Effect::Effect(): counter(0) {
+}
+
 void Effect::add(double initX, double initY, const IMG *image, double speed, double angle) {
 	moveimages.emplace_back(Point(initX, initY), image, speed, angle);
+}
+
+void Effect::add(Point point, std::vector<const IMG *> image, unsigned long animationCount) {
+	animimages.emplace_back(point, image, animationCount);
 }
 
 void Effect::applyNext() {
 	double speed, angle;
 	for(auto &i: moveimages) {
-		speed = std::get<EFAC_SPEED>(i), angle = std::get<EFAC_ANGLE>(i);
-		std::get<EFAC_COORD>(i).moveX(speed * cos(angle));
-		std::get<EFAC_COORD>(i).moveY(speed * sin(angle));
+		speed = std::get<MEFAC_SPEED>(i), angle = std::get<MEFAC_ANGLE>(i);
+		std::get<MEFAC_COORD>(i).moveX(speed * cos(angle));
+		std::get<MEFAC_COORD>(i).moveY(speed * sin(angle));
 	}
+	counter++;
 }
 
 void Effect::drawNextMove() {
@@ -304,10 +308,17 @@ void Effect::drawNextMove() {
 	double harfX, harfY;
 	applyNext();
 	for(const auto &i: moveimages) {
-		image = std::get<EFAC_IMG>(i);
+		image = std::get<MEFAC_IMG>(i);
 		harfX = image->getSizeX() / 2.0;
 		harfY = image->getSizeY() / 2.0;
-		DrawGraph((int)(std::get<EFAC_COORD>(i).getX() - harfX), (int)(std::get<EFAC_COORD>(i).getY() - harfY), image->getHandle(), true);
+		DrawGraph((int)(std::get<MEFAC_COORD>(i).getX() - harfX), (int)(std::get<MEFAC_COORD>(i).getY() - harfY), image->getHandle(), true);
+	}
+
+	for(const auto &i: animimages) {
+		image = std::get<AEFAC_IMG>(i).at((counter % (std::get<AEFAC_IMG>(i).size() * std::get<AEFAC_ANIM_COUNT>(i))) / std::get<AEFAC_ANIM_COUNT>(i));
+		harfX = image->getSizeX() / 2.0;
+		harfY = image->getSizeY() / 2.0;
+		DrawGraph((int)(std::get<AEFAC_COORD>(i).getX() - harfX), (int)(std::get<AEFAC_COORD>(i).getY() - harfY), image->getHandle(), true);
 	}
 }
 
@@ -316,11 +327,23 @@ bool Effect::areAllEffectsOutOfArea(double areaLeft, double areaTop, double area
 	double harfX, harfY;
 	if(moveimages.size() == 0) return false;
 	for(const auto &i: moveimages) {
-		point = &std::get<EFAC_COORD>(i);
-		harfX = std::get<EFAC_IMG>(i)->getSizeX() / 2.0;
-		harfY = std::get<EFAC_IMG>(i)->getSizeY() / 2.0;
+		point = &std::get<MEFAC_COORD>(i);
+		harfX = std::get<MEFAC_IMG>(i)->getSizeX() / 2.0;
+		harfY = std::get<MEFAC_IMG>(i)->getSizeY() / 2.0;
 		if(point->getX() + harfX >= areaLeft && point->getY() + harfY >= areaTop && point->getX() - harfX <= areaRight && point->getY() - harfY <= areaBottom) return false;
 	}
 	return true;
+}
+
+int Effect::minAnimationLoopNum() {
+	if(animimages.size() == 0) return -1;
+
+	int ret = counter / (std::get<AEFAC_IMG>(animimages[0]).size() * std::get<AEFAC_ANIM_COUNT>(animimages[0]));
+	int buf;
+	for(size_t i = 1; i < animimages.size(); i++) {
+		buf = counter / (std::get<AEFAC_IMG>(animimages[i]).size() * std::get<AEFAC_ANIM_COUNT>(animimages[i]));
+		if(ret < buf) ret = buf;
+	}
+	return ret;
 }
 // ------------------------------------------------------------------------------------

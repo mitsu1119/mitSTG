@@ -153,19 +153,16 @@ public:
 // player
 class Player: public Character {
 private:
-	const IMG *deathEffectImage;
 	std::vector<const IMG *> centerImage, leftImage, rightImage;
 	std::vector<Option *> options;
 
 	void changeImage(Direction dir);
 
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage, std::vector<Option *> options);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, std::vector<Option *> options);
 
 	void move(Direction dir);
 	void setSpeed(double newSpeed);
-
-	const IMG *getDeathEffectImage() const;
 
 	virtual void draw();
 };
@@ -210,19 +207,29 @@ public:
 class Effect {
 private:
 	typedef std::tuple<Point, const IMG *, double, double> MoveEffectElement;
-	enum EffectAccessor {
-		EFAC_COORD, EFAC_IMG, EFAC_SPEED, EFAC_ANGLE
+	enum MoveEffectAccessor {
+		MEFAC_COORD, MEFAC_IMG, MEFAC_SPEED, MEFAC_ANGLE
 	};
 	std::vector<MoveEffectElement> moveimages;
 	
-	typedef std::vector<const IMG *> AnimEffectElement;
+	typedef std::tuple<Point, std::vector<const IMG *>, unsigned long> AnimEffectElement;
+	enum AnimEffectAccessor {
+		AEFAC_COORD, AEFAC_IMG, AEFAC_ANIM_COUNT
+	};
+	std::vector<AnimEffectElement> animimages;
+	
+	int counter;
 
 	void applyNext();
 
 public:
+	Effect();
+
 	void add(double initX, double initY, const IMG * image, double speed, double angle);
+	void add(Point point, std::vector<const IMG *> image, unsigned long animationCount);
 	void drawNextMove();
 
 	bool areAllEffectsOutOfArea(double areaLeft, double areaTop, double areaRight, double areaBottom) const;
+	int minAnimationLoopNum();
 };
 // ---------------------------------------------------------------------------------------------------------------------------------

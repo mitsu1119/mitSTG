@@ -37,7 +37,12 @@ enum OptionDBAccessor {
 	OPDB_IMG, OPDB_ANIM_COUNT, OPDB_X, OPDB_Y, OPDB_SHOTNAME, OPDB_SHOTTYPE, OPDB_SHOTSPEED, OPDB_SHOTINTERVAL
 };
 
-constexpr size_t MAX_EFFECT_DISP = 5;
+typedef std::unordered_map<std::string, std::tuple<std::vector<const IMG *>, unsigned long>> EffectDataBase;
+enum EffectDBAccessor {
+	EFDB_IMG, EFDB_ANIM_COUNT
+};
+
+constexpr size_t MAX_EFFECT_DISP = 50;
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 300;
 class Game : public Scene {
@@ -49,6 +54,7 @@ private:
 	bool playerNonDrawFlag;
 
 	const CharDataBase &enemDB, &shotDB;
+	const EffectDataBase &effectDB;
 	
 	Stage stage;
 	const IMG *bgImg, *lifeImg;
@@ -112,7 +118,7 @@ private:
 	void shapeDrawing();		// debug
 
 public:
-	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions);
+	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB,  int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions);
 	~Game();
 
 	virtual int update();
@@ -159,8 +165,8 @@ private:
 	CharDataBase players;
 	std::unordered_map<std::string, std::vector<const IMG *>> playerLeftImages;
 	std::unordered_map<std::string, std::vector<const IMG *>> playerRightImages;
-	CharDataBase enemys;
-	CharDataBase shots;
+	CharDataBase enemys, shots;
+	EffectDataBase effects;
 	OptionDataBase options;
 
 	// Player datas.
@@ -169,7 +175,6 @@ private:
 	Shape *pShape;
 	double initPx, initPy;		// There data are the player's initial position when each stage begins.
 	int initPlayerLifeNum;
-	const IMG *playerDeathEffectImg;
 
 	// Other datas.
 	const IMG *lifeImg;

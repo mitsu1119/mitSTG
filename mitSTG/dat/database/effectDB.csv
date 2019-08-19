@@ -1,0 +1,3 @@
+#effectName,imageName,imageDivNum,animationCount
+playerDamaged,playerDeath.png,1,1
+miniBomb,bombmini.png,11,4

@@ -3,7 +3,7 @@
 Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg), playerOptions(playerOptions) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg), playerOptions(playerOptions) {
 	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
@@ -349,7 +349,7 @@ void Game::collisionProcessing() {
 				if(effectIndex == 0 && effectPoolFlags[0] == true) continue;			// Full of effectPool
 				effectPoolFlags[effectIndex] = true;
 				effectPool[effectIndex] = new Effect();
-				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), player->getDeathEffectImage(), 8, 2 * M_PI / 30 * j);
+				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), std::get<EFDB_IMG>(effectDB.at("playerDamaged"))[0], 8, 2 * M_PI / 30 * j);
 			}
 		}
 	}
@@ -366,7 +366,15 @@ void Game::collisionProcessing() {
 					sEnem = enemyPool[j]->getShapePt();
 					if(collider->operator()(*sPshot, *sEnem)) {
 						delFlag = true;
-						if(enemyPool[j]->damaged(playerShotPool[i]->getPower()) <= 0) destroyEnemyPool(j);
+						if(enemyPool[j]->damaged(playerShotPool[i]->getPower()) <= 0) {
+								size_t effectIndex = searchAddableEffectPool();
+								if(j != 0 || effectPoolFlags[0] == false) {
+									effectPoolFlags[effectIndex] = true;
+									effectPool[effectIndex] = new Effect();
+									effectPool[effectIndex]->add(enemyPool[j]->getPoint(), std::get<EFDB_IMG>(effectDB.at("miniBomb")), std::get<EFDB_ANIM_COUNT>(effectDB.at("miniBomb")));
+								}
+							destroyEnemyPool(j);
+						}
 						break;
 					}
 				}
@@ -393,16 +401,19 @@ void Game::collisionProcessing() {
 				if(effectIndex == 0 && effectPoolFlags[0] == true) continue;			// Full of effectPool
 				effectPoolFlags[effectIndex] = true;
 				effectPool[effectIndex] = new Effect();
-				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), player->getDeathEffectImage(), 8, 2 * M_PI / 30 * j);
+				size_t x = std::get<EFDB_IMG>(effectDB.at("playerDamaged")).size();
+
+				for(size_t j = 0; j < 30; j++) effectPool[effectIndex]->add(player->getPointPt()->getX(), player->getPointPt()->getY(), std::get<EFDB_IMG>(effectDB.at("playerDamaged"))[0], 8, 2 * M_PI / 30 * j);
 			}
+
 		}
 	}
 }
 
 void Game::animationProcessing() {
-	// move effect
+	// effect flags
 	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
-		if(effectPoolFlags[i]  && effectPool[i]->areAllEffectsOutOfArea(leftX, topY, rightX, bottomY)) destroyEffectPool(i);
+		if(effectPoolFlags[i]  && (effectPool[i]->areAllEffectsOutOfArea(leftX, topY, rightX, bottomY) || effectPool[i]->minAnimationLoopNum() == 1)) destroyEffectPool(i);
 	}
 
 	// Invincible player blinking
@@ -591,7 +602,7 @@ void GameOverScene::draw() {
 // --------------------------------------------------------------------------------------------------
 
 // ----------------------------- SceneManager class -----------------------------------------------
-MitSTG::MitSTG(): initPlayerLifeNum(3) {
+MitSTG::MitSTG() {
 	nowScene = nullptr;
 	nowSceneType = SCENE_TITLE;
 
@@ -608,11 +619,11 @@ MitSTG::MitSTG(): initPlayerLifeNum(3) {
 		pShape = new Shape(initPx - harfshapesize1, initPy - harfshapesize2, initPx + harfshapesize1, initPy + harfshapesize2);
 	else
 		pShape = new Shape(initPx, initPy, harfshapesize1);
-	playerDeathEffectImg = new IMG("dat\\image\\effect\\playerDeathEffect.png");
 	for(const auto &i: options["Shirokami_chann"]) playerOptions.emplace_back(new Option(Point(std::get<OPDB_X>(i), std::get<OPDB_Y>(i)), std::get<OPDB_IMG>(i), std::get<OPDB_ANIM_COUNT
 	>(i), std::get<OPDB_SHOTNAME>(i), std::get<OPDB_SHOTTYPE>(i), std::get<OPDB_SHOTSPEED>(i), std::get<OPDB_SHOTINTERVAL>(i)));
 
-	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", initPlayerLifeNum, playerDeathEffectImg, playerOptions);
+	initPlayerLifeNum = std::get<CHDB_HP_OR_POWER>(players["Shirokami_chann"]);
+	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", initPlayerLifeNum, playerOptions);
 
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");
@@ -725,7 +736,7 @@ int MitSTG::loading() {
 		 shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(enemys[parsed[0]]) = shapeDataBuf;
 
-		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 10;
+		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 1;
 		delete[] loadDivHandles;
 	}
 	ifs.close();
@@ -759,6 +770,25 @@ int MitSTG::loading() {
 		delete[] loadDivHandles;
 	}
 	ifs.close();
+
+	// effects
+	ifs.open("dat\\database\\effectDB.csv");
+	if(ifs.fail()) return -1;
+	while(getline(ifs, buf)) {
+		if(buf[0] == '#') continue;
+		parsed = split_str(buf, ',');
+
+		divNum = std::stoi(parsed[2]);
+
+		loadDivHandles = new int[divNum];
+		GetImageSize_File(("dat\\image\\effect\\" + parsed[1]).c_str(), &bufX, &bufY);
+		LoadDivGraph(("dat\\image\\effect\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		for(size_t i = 0; i < divNum; i++) std::get<EFDB_IMG>(effects[parsed[0]]).emplace_back(new IMG(loadDivHandles[i]));
+		std::get<EFDB_ANIM_COUNT>(effects[parsed[0]]) = std::stoul(parsed[3]);
+
+		delete[] loadDivHandles;
+	}
+	ifs.close();
 	// --------------------------------------------------------------------------------------------------------------------------
 
 	return 0;
@@ -773,7 +803,7 @@ void MitSTG::changeScene(SceneType scene) {
 		break;
 	case SCENE_GAME_1:
 		if(nowScene != nullptr) delete nowScene;
-		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, 0, 0, wndArea.right, wndArea.bottom, lifeImg, playerOptions);
+		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, effects, 0, 0, wndArea.right, wndArea.bottom, lifeImg, playerOptions);
 		break;
 	case SCENE_GAMEOVER:
 		Scene *buf = new GameOverScene();
