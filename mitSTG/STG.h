@@ -71,6 +71,7 @@ private:
 
 	void player1(Shot *shot);
 	void player2(Shot *shot);
+	void option1(Shot *shot);
 	void target(Shot *shot);
 	void swirl(Shot *shot);
 
@@ -83,6 +84,35 @@ public:
 	}
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------- Option --------------------------------------------------------------
+class Character;
+class Option {
+private:
+	// point: distance to player, coord: the option's coordinate.
+	Point point, coord;
+	std::vector<const IMG *> image;
+	size_t animationNum;
+	unsigned long animationCount;
+
+	std::string shotName, shotPattern;
+	double shotSpeed;
+	int shotInterval;
+	
+	int counter;
+
+public:
+	Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval);
+
+	const Point *getCoordPt() const;
+	std::string getShotName() const;
+	std::string getShotPattern() const;
+	double getShotSpeed() const;
+	int getShotInterval() const;
+
+	void update(double ownerX, double ownerY);
+	void draw() const;
+};
 
 // --------------------------------------------------------- Character --------------------------------------------------------------
 // base
@@ -117,7 +147,7 @@ public:
 	int getShotInterval() const;
 	int getCounter() const;
 	void info() const;		// for debug
-	void draw() const;
+	virtual void draw() const;
 };
 
 // player
@@ -125,16 +155,19 @@ class Player: public Character {
 private:
 	const IMG *deathEffectImage;
 	std::vector<const IMG *> centerImage, leftImage, rightImage;
+	std::vector<Option *> options;
 
 	void changeImage(Direction dir);
 
 public:
-	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage);
+	Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage, std::vector<Option *> options);
 
 	void move(Direction dir);
 	void setSpeed(double newSpeed);
 
 	const IMG *getDeathEffectImage() const;
+
+	virtual void draw();
 };
 
 // enemy

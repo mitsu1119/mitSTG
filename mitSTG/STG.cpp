@@ -47,6 +47,7 @@ void Shot::draw() const {
 ShotMover::ShotMover(const Player *player): player(player) {
 	moveFuncTable["player1"] = &ShotMover::player1;
 	moveFuncTable["player2"] = &ShotMover::player2;
+	moveFuncTable["option1"] = &ShotMover::option1;
 	moveFuncTable["target"] = &ShotMover::target;
 	moveFuncTable["swirl"] = &ShotMover::swirl;
 }
@@ -72,6 +73,10 @@ void ShotMover::player2(Shot *shot) {
 	shot->counter++;
 }
 
+void ShotMover::option1(Shot *shot) {
+	player1(shot);
+}
+
 void ShotMover::target(Shot *shot) {
 	if(shot->counter == 0) shot->angle = atan2(player->getPointPt()->getY() - shot->point.getY(), player->getPointPt()->getX() - shot->point.getX());
 	shot->moveX(shot->speed * cos(shot->angle));
@@ -87,6 +92,42 @@ void ShotMover::swirl(Shot *shot) {
 }
 
 // -------------------------------------------------------------------------------------
+
+// ------------------------- Option class ---------------------------------------------------------------------------
+Option::Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval): point(p), coord(Point(0, 0)), image(image), animationCount(animationCount), shotPattern(shotPattern), shotName(shotName), shotSpeed(shotSpeed), shotInterval(shotInterval), animationNum(image.size()), counter(0) {
+	update(0, 0);
+}
+
+void Option::update(double ownerX, double ownerY) {
+	coord.setX(ownerX + point.getX());
+	coord.setY(ownerY + point.getY());
+	counter++;
+}
+
+const Point *Option::getCoordPt() const {
+	return &coord;
+}
+
+std::string Option::getShotName() const {
+	return shotName;
+}
+
+std::string Option::getShotPattern() const {
+	return shotPattern;
+}
+
+double Option::getShotSpeed() const {
+	return shotSpeed;
+}
+
+int Option::getShotInterval() const {
+	return shotInterval;
+}
+
+void Option::draw() const {
+	DrawGraph(int(coord.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(coord.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+}
+// --------------------------------------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
 Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount,  Shape *shape, std::string shotName, int HP): animationNum(image.size()), animationCount(animationCount), point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP) {
@@ -159,7 +200,8 @@ void Character::draw() const {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), deathEffectImage(deathEffectImage) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, const IMG *deathEffectImage, std::vector<Option *> options) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), deathEffectImage(deathEffectImage), options(options) {
+	for(auto &i: options) i->update(point.getX(), point.getY());
 }
 
 void Player::changeImage(Direction dir) {
@@ -200,7 +242,6 @@ void Player::move(Direction dir) {
 
 	point.moveX(speed * cos(dir * M_PI / 4));
 	point.moveY(-1 * speed * sin(dir * M_PI / 4));
-
 	updateShape();
 }
 
@@ -210,6 +251,12 @@ void Player::setSpeed(double newSpeed) {
 
 const IMG *Player::getDeathEffectImage() const {
 	return deathEffectImage;
+}
+
+void Player::draw() {
+	for(auto &i: options) i->update(point.getX(), point.getY());
+	for(const auto &i: options) i->draw();
+	DrawGraph(int(point.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(point.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 

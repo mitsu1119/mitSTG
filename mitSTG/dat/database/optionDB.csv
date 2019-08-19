@@ -1,0 +1,3 @@
+#playerName,imageName,animationDivNum,animationCount,coordX,coordY,shotName,shotType,shotSpeed,shotInterval
+Shirokami_chann,batteryOptionRev.png,4,4,-20,34,Varistor,option1,-13,1
+Shirokami_chann,batteryOption.png,4,4,20,34,Varistor,option1,-13,1

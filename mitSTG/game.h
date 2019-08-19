@@ -31,12 +31,19 @@ typedef std::unordered_map<std::string, std::tuple<std::vector<const IMG *>, uns
 enum CharDBAccessor {
 	CHDB_IMG, CHDB_ANIM_COUNT, CHDB_SHAPE, CHDB_SHAPE_DATA1, CHDB_SHAPE_DATA2, CHDB_HP_OR_POWER
 };
+
+typedef std::unordered_map<std::string, std::vector<std::tuple<std::vector<const IMG *>, unsigned long, int, int, std::string, std::string, double, int>>> OptionDataBase;
+enum OptionDBAccessor {
+	OPDB_IMG, OPDB_ANIM_COUNT, OPDB_X, OPDB_Y, OPDB_SHOTNAME, OPDB_SHOTTYPE, OPDB_SHOTSPEED, OPDB_SHOTINTERVAL
+};
+
 constexpr size_t MAX_EFFECT_DISP = 5;
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 300;
 class Game : public Scene {
 private:
 	Player *player;
+	std::vector<Option *> playerOptions;
 	int playerInvincibleFlag;			// Invincible mode start time. If player is not invinceble, this value is -1.
 	double playerOriginalSpeed;
 	bool playerNonDrawFlag;
@@ -105,7 +112,7 @@ private:
 	void shapeDrawing();		// debug
 
 public:
-	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg);
+	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions);
 	~Game();
 
 	virtual int update();
@@ -154,9 +161,11 @@ private:
 	std::unordered_map<std::string, std::vector<const IMG *>> playerRightImages;
 	CharDataBase enemys;
 	CharDataBase shots;
+	OptionDataBase options;
 
 	// Player datas.
 	Player *player;
+	std::vector<Option *> playerOptions;
 	Shape *pShape;
 	double initPx, initPy;		// There data are the player's initial position when each stage begins.
 	int initPlayerLifeNum;
