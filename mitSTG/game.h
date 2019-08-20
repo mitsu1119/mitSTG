@@ -111,6 +111,7 @@ private:
 	void animationProcessing();
 
 	void bgDrawing();
+	void effectDrawing();
 	void systemDrawing();
 	void playerAndEnemyShotDrawing();
 	void enemyDrawing();

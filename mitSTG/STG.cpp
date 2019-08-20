@@ -5,9 +5,10 @@ Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const
 }
 
 void Shot::updateShape() const {
-	double harfX = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, harfY = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0;
-	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
-	else shape->resetCoord(point.getX(), point.getY());
+	if(shape->getType() == RECT_SHAPE) {
+		double harfX = (shape->getRight() - shape->getLeft()) / 2.0, harfY = (shape->getBottom() - shape->getTop()) / 2.0;
+		shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
+	}  else shape->resetCoord(point.getX(), point.getY());
 }
 
 Point Shot::getImageSize() const {
@@ -39,7 +40,8 @@ int Shot::getPower() const {
 }
 
 void Shot::draw() const {
-	DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+	DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+	// DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
@@ -134,9 +136,10 @@ Character::Character(Point p, double speed, std::string shotPattern, double shot
 }
 
 void Character::updateShape() {
-	double harfX = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, harfY = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0;
-	if(shape->getType() == RECT_SHAPE) shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
-	else shape->resetCoord(point.getX(), point.getY());
+	if(shape->getType() == RECT_SHAPE) {
+		double harfX = (shape->getRight() - shape->getLeft()) / 2.0, harfY = (shape->getBottom() - shape->getTop()) / 2.0;
+		shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
+	}  else shape->resetCoord(point.getX(), point.getY());
 }
 
 void Character::setCoord(double x, double y) {

@@ -97,7 +97,7 @@ void Game::checkKey() {
 }
 
 void Game::drawShape(const Shape &shape) {
-	if(shape.getType() == RECT_SHAPE) DrawBox((int)shape.getRight(), (int)shape.getTop(), (int)shape.getLeft(), (int)shape.getBottom(), GREEN, true);
+	if(shape.getType() == RECT_SHAPE) DrawBox((int)shape.getLeft(), (int)shape.getTop(), (int)shape.getRight(), (int)shape.getBottom(), GREEN, true);
 	else DrawCircle((int)shape.getCenter()->getX(), (int)shape.getCenter()->getY(), (int)shape.getRadius(), RED);
 }
 
@@ -330,7 +330,7 @@ void Game::enemyProcessing() {
 		if(enemyPoolFlags[i]) {
 			harfshapesize1 = enemyPool[i]->getImage()->getSizeX() / 2.0;
 			harfshapesize2 = enemyPool[i]->getImage()->getSizeY() / 2.0;
-			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 100 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 100 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 100 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 100) destroyEnemyPool(i);
+			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 300 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 300 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 300 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 300) destroyEnemyPool(i);
 		}
 	}
 }
@@ -434,12 +434,13 @@ void Game::bgDrawing() {
 	} while(bgYbuf >= -bgImg->getSizeY());
 }
 
-void Game::systemDrawing() {
-	// effect
+void Game::effectDrawing() {
 	for(size_t i = 0; i < MAX_EFFECT_DISP; i++) {
 		if(effectPoolFlags[i]) effectPool[i]->drawNextMove();
 	}
+}
 
+void Game::systemDrawing() {
 	// player life
 	for(int i = 0; i < player->damaged(0); i++) DrawGraph(10 * (i + 1) + lifeImg->getSizeX() * i, 10, lifeImg->getHandle(), true);
 }
@@ -508,8 +509,9 @@ void Game::draw() {
 	ClearDrawScreen();
 
 	bgDrawing();
-	playerDrawing();
+	effectDrawing();
 	enemyDrawing();
+	playerDrawing();
 	playerAndEnemyShotDrawing();
 	systemDrawing();
 
@@ -736,7 +738,7 @@ int MitSTG::loading() {
 		 shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(enemys[parsed[0]]) = shapeDataBuf;
 
-		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = 1;
+		std::get<CHDB_HP_OR_POWER>(enemys[parsed[0]]) = std::stoi(parsed[7]);
 		delete[] loadDivHandles;
 	}
 	ifs.close();
