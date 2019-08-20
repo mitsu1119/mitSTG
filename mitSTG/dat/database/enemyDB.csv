@@ -1,3 +1,7 @@
 #enemyName,imageName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)",life
 Sphere,sphere.png,16,3,circle,42,0,1
-Fuji,Fuji.png,1,1,rect,500,90,180
+Fuji,Fuji.png,1,1,rect,36,300,100
+Fuji_LeftWing,FujiLeft.png,1,1,rect,250,36,40
+Fuji_RightWing,FujiRight.png,1,1,rect,250,36,40
+Fuji_BackLeftWing,FujiBackLeft.png,1,1,rect,80,24,20
+Fuji_BackRightWing,FujiBackRight.png,1,1,rect,80,24,20

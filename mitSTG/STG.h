@@ -190,9 +190,16 @@ class EnemyMover {
 private:
 	typedef void(EnemyMover:: *EFUNC)(Enemy *enemy);
 	std::unordered_map<std::string, EFUNC> moveFuncTable;
+
+	Enemy *bossBuf;
 	
 	void straight(Enemy *enemy);
-	
+	void fuji(Enemy *enemy);
+	void fuji_left(Enemy *enemy);
+	void fuji_right(Enemy *enemy);
+	void fuji_back_right(Enemy *enemy);
+	void fuji_back_left(Enemy *enemy);
+
 public:
 	EnemyMover();
 

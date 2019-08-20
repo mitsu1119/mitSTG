@@ -238,7 +238,7 @@ void Game::playerShotMoving() {
 			pt = playerShotPool[i]->getPointPt();
 			harfX = int(playerShotPool[i]->getImageSize().getX() / 2.0);
 			harfY = int(playerShotPool[i]->getImageSize().getY() / 2.0);
-			if(pt->getX() + harfX < leftX || pt->getX() - harfX > rightX || pt->getY() + harfY < topY || pt->getY() - harfY > bottomY) {
+			if(pt->getX() + harfX < leftX -100 || pt->getX() - harfX > rightX + 100 || pt->getY() + harfY < topY - 100 || pt->getY() - harfY > bottomY + 100) {
 				destroyPshotPool(i);
 			}
 		}
@@ -325,12 +325,22 @@ void Game::enemyProcessing() {
 		}
 	}
 	
-	// If enemy goes outside, destroy the enemy.
+	// If enemy goes outside or HP is less, destroy the enemy.
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i]) {
 			harfshapesize1 = enemyPool[i]->getImage()->getSizeX() / 2.0;
 			harfshapesize2 = enemyPool[i]->getImage()->getSizeY() / 2.0;
-			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 300 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 300 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 300 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 300) destroyEnemyPool(i);
+			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 500 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 500 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 500 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 500) destroyEnemyPool(i);
+			else if(enemyPool[i]->damaged(0) <= 0) {
+				size_t effectIndex = searchAddableEffectPool();
+				if(i != 0 || effectPoolFlags[0] == false) {
+					effectPoolFlags[effectIndex] = true;
+					effectPool[effectIndex] = new Effect();
+					effectPool[effectIndex]->add(enemyPool[i]->getPoint(), std::get<EFDB_IMG>(effectDB.at("miniBomb")), std::get<EFDB_ANIM_COUNT>(effectDB.at("miniBomb")));
+				}
+				destroyEnemyPool(i);
+			}
+
 		}
 	}
 }
@@ -366,15 +376,7 @@ void Game::collisionProcessing() {
 					sEnem = enemyPool[j]->getShapePt();
 					if(collider->operator()(*sPshot, *sEnem)) {
 						delFlag = true;
-						if(enemyPool[j]->damaged(playerShotPool[i]->getPower()) <= 0) {
-								size_t effectIndex = searchAddableEffectPool();
-								if(j != 0 || effectPoolFlags[0] == false) {
-									effectPoolFlags[effectIndex] = true;
-									effectPool[effectIndex] = new Effect();
-									effectPool[effectIndex]->add(enemyPool[j]->getPoint(), std::get<EFDB_IMG>(effectDB.at("miniBomb")), std::get<EFDB_ANIM_COUNT>(effectDB.at("miniBomb")));
-								}
-							destroyEnemyPool(j);
-						}
+						enemyPool[j]->damaged(playerShotPool[i]->getPower());
 						break;
 					}
 				}

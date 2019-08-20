@@ -273,13 +273,71 @@ int Enemy::getShotCnt() const {
 // -------------------------------------------------------------------------------------
 
 // ---------------------- EnemyMover class ---------------------------------------------
-EnemyMover::EnemyMover() {
+EnemyMover::EnemyMover(): bossBuf(nullptr) {
 	moveFuncTable["straight"] = &EnemyMover::straight;
+	moveFuncTable["fuji"] = &EnemyMover::fuji;
+	moveFuncTable["fuji_left"] = &EnemyMover::fuji_left;
+	moveFuncTable["fuji_right"] = &EnemyMover::fuji_right;
+	moveFuncTable["fuji_back_left"] = &EnemyMover::fuji_back_left;
+	moveFuncTable["fuji_back_right"] = &EnemyMover::fuji_back_right;
 }
 
 void EnemyMover::straight(Enemy *enemy) {
 	enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
 	enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	enemy->counter++;
+}
+
+void EnemyMover::fuji(Enemy *enemy) {
+	bossBuf = enemy;
+	if(enemy->counter < 230) {
+		enemy->point.moveY(enemy->speed * enemy->moveAngle);
+	}  else {
+		enemy->point.moveX(enemy->speed);
+		enemy->point.moveY(2.0 / 3.0 * cos(enemy->counter / 30));
+		if(enemy->point.getX() > 430) enemy->speed *= -1;
+		if(enemy->point.getX() < 110) enemy->speed *= -1;
+	}
+	enemy->counter++;
+}
+
+void EnemyMover::fuji_left(Enemy *enemy) {
+	if(bossBuf->HP <= 0) {
+		enemy->HP = 0;
+		return;
+	}
+	enemy->point.setX(bossBuf->getPointPt()->getX() + 131);
+	enemy->point.setY(bossBuf->getPointPt()->getY() + 23);
+	enemy->counter++;
+}
+
+void EnemyMover::fuji_right(Enemy *enemy) {
+	if(bossBuf->HP <= 0) {
+		enemy->HP = 0;
+		return;
+	}
+	enemy->point.setX(bossBuf->getPointPt()->getX() - 131);
+	enemy->point.setY(bossBuf->getPointPt()->getY() + 23);
+	enemy->counter++;
+}
+
+void EnemyMover::fuji_back_left(Enemy *enemy) {
+	if(bossBuf->HP <= 0) {
+		enemy->HP = 0;
+		return;
+	}
+	enemy->point.setX(bossBuf->getPointPt()->getX() + 50);
+	enemy->point.setY(bossBuf->getPointPt()->getY() - 133);
+	enemy->counter++;
+}
+
+void EnemyMover::fuji_back_right(Enemy *enemy) {
+	if(bossBuf->HP <= 0) {
+		enemy->HP = 0;
+		return;
+	}
+	enemy->point.setX(bossBuf->getPointPt()->getX() - 50);
+	enemy->point.setY(bossBuf->getPointPt()->getY() - 133);
 	enemy->counter++;
 }
 // ------------------------------------------------------------------------------------------
