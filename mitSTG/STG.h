@@ -97,7 +97,7 @@ private:
 
 	std::string shotName, shotPattern;
 	double shotSpeed;
-	int shotInterval;
+	int shotInterval, shotCnt;
 	
 	int counter;
 
@@ -109,8 +109,10 @@ public:
 	std::string getShotPattern() const;
 	double getShotSpeed() const;
 	int getShotInterval() const;
+	int getShotCnt() const;
 
 	void update(double ownerX, double ownerY);
+	void incShotCnt();
 	void draw() const;
 };
 
@@ -118,11 +120,12 @@ public:
 // base
 class Character {
 protected:
-	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP);
+	Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options);
 	
 	Point point;
 	Shape *shape;
 	std::vector<const IMG *> image;
+	std::vector<Option *> options;
 	size_t animationNum;
 	unsigned long animationCount;
 
@@ -135,6 +138,8 @@ protected:
 public:
 	void setCoord(double x, double y);
 	int damaged(int damageValue);
+	void optionUpdate();
+	virtual void draw() = 0;
 
 	Point getPoint() const;
 	const Shape *getShapePt() const;
@@ -146,15 +151,15 @@ public:
 	double getShotSpeed() const;
 	int getShotInterval() const;
 	int getCounter() const;
+	const std::vector<Option *> *getOptionsPt() const;
 	void info() const;		// for debug
-	virtual void draw() const;
+	void optionsDraw() const;
 };
 
 // player
 class Player: public Character {
 private:
 	std::vector<const IMG *> centerImage, leftImage, rightImage;
-	std::vector<Option *> options;
 
 	void changeImage(Direction dir);
 
@@ -179,9 +184,10 @@ private:
 	double moveAngle;
 
 public:
-	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotImage, int HP);
+	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotImage, int HP, std::vector<Option *> options);
 
 	void incShotCnt();
+	virtual void draw();
 
 	int getShotCnt() const;
 };

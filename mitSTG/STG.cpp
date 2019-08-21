@@ -96,7 +96,7 @@ void ShotMover::swirl(Shot *shot) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Option class ---------------------------------------------------------------------------
-Option::Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval): point(p), coord(Point(0, 0)), image(image), animationCount(animationCount), shotPattern(shotPattern), shotName(shotName), shotSpeed(shotSpeed), shotInterval(shotInterval), animationNum(image.size()), counter(0) {
+Option::Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval): point(p), coord(Point(0, 0)), image(image), animationCount(animationCount), shotPattern(shotPattern), shotName(shotName), shotSpeed(shotSpeed), shotInterval(shotInterval), animationNum(image.size()), counter(0), shotCnt(0) {
 	update(0, 0);
 }
 
@@ -104,6 +104,10 @@ void Option::update(double ownerX, double ownerY) {
 	coord.setX(ownerX + point.getX());
 	coord.setY(ownerY + point.getY());
 	counter++;
+}
+
+void Option::incShotCnt() {
+	shotCnt++;
 }
 
 const Point *Option::getCoordPt() const {
@@ -126,13 +130,18 @@ int Option::getShotInterval() const {
 	return shotInterval;
 }
 
+int Option::getShotCnt() const {
+	return shotCnt;
+}
+
 void Option::draw() const {
 	DrawGraph(int(coord.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(coord.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // --------------------------------------------------------------------------------------------------------------------
 
 // ------------------------- Character class ------------------------------------------
-Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount,  Shape *shape, std::string shotName, int HP): animationNum(image.size()), animationCount(animationCount), point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP) {
+Character::Character(Point p, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount,  Shape *shape, std::string shotName, int HP, std::vector<Option *> options): animationNum(image.size()), animationCount(animationCount), point(p), speed(speed), shotPattern(shotPattern), shotSpeed(shotSpeed), shotInterval(shotInterval), image(image), shape(shape), shotName(shotName), counter(0), HP(HP), options(options) {
+	optionUpdate();
 }
 
 void Character::updateShape() {
@@ -140,6 +149,10 @@ void Character::updateShape() {
 		double harfX = (shape->getRight() - shape->getLeft()) / 2.0, harfY = (shape->getBottom() - shape->getTop()) / 2.0;
 		shape->resetCoord(point.getX() - harfX, point.getY() - harfY, point.getX() + harfX, point.getY() + harfY);
 	}  else shape->resetCoord(point.getX(), point.getY());
+}
+
+void Character::optionUpdate() {
+	for(auto &i: options) i->update(point.getX(), point.getY());
 }
 
 void Character::setCoord(double x, double y) {
@@ -188,6 +201,10 @@ int Character::getCounter() const {
 	return counter;
 }
 
+const std::vector<Option *> *Character::getOptionsPt() const {
+	return &options;
+}
+
 int Character::damaged(int damageValue) {
 	HP -= damageValue;
 	return HP;
@@ -197,13 +214,13 @@ void Character::info() const {
 	printfDx("(%f, %f), size(%d, %d)\n", point.getX(), point.getY(), image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX(), image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY());
 }
 
-void Character::draw() const {
-	DrawGraph(int(point.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(point.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+void Character::optionsDraw() const {
+	for(const auto &i: options) i->draw();
 }
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Player class ----------------------------------------------
-Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, std::vector<Option *> options) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife), centerImage(image), leftImage(leftImage), rightImage(rightImage), options(options) {
+Player::Player(double initPx, double initPy, double speed, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, std::vector<const IMG *> leftImage, std::vector<const IMG *> rightImage, unsigned long animationCount, Shape *shape, std::string shotName, int maxLife, std::vector<Option *> options) : Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, maxLife, options), centerImage(image), leftImage(leftImage), rightImage(rightImage) {
 	for(auto &i: options) i->update(point.getX(), point.getY());
 }
 
@@ -253,14 +270,14 @@ void Player::setSpeed(double newSpeed) {
 }
 
 void Player::draw() {
-	for(auto &i: options) i->update(point.getX(), point.getY());
-	for(const auto &i: options) i->draw();
+	optionUpdate();
+	optionsDraw();
 	DrawGraph(int(point.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(point.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 }
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP, options), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
 }
 
 void Enemy::incShotCnt() {
@@ -269,6 +286,12 @@ void Enemy::incShotCnt() {
 
 int Enemy::getShotCnt() const {
 	return shotCnt;
+}
+
+void Enemy::draw() {
+	for(auto &i: options) i->update(point.getX(), point.getY());
+	DrawGraph(int(point.getX() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0), int(point.getY() - (double)image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+	optionsDraw();
 }
 // -------------------------------------------------------------------------------------
 
@@ -290,7 +313,7 @@ void EnemyMover::straight(Enemy *enemy) {
 
 void EnemyMover::fuji(Enemy *enemy) {
 	bossBuf = enemy;
-	if(enemy->counter < 230) {
+	if(enemy->counter < 240) {
 		enemy->point.moveY(enemy->speed * enemy->moveAngle);
 	}  else {
 		enemy->point.moveX(enemy->speed);

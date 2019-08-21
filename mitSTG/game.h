@@ -44,17 +44,17 @@ enum EffectDBAccessor {
 
 constexpr size_t MAX_EFFECT_DISP = 50;
 constexpr size_t MAX_ENEMY_DISP = 20;
-constexpr size_t MAX_SHOT_DISP = 300;
+constexpr size_t MAX_SHOT_DISP = 500;
 class Game : public Scene {
 private:
 	Player *player;
-	std::vector<Option *> playerOptions;
 	int playerInvincibleFlag;			// Invincible mode start time. If player is not invinceble, this value is -1.
 	double playerOriginalSpeed;
 	bool playerNonDrawFlag;
 
 	const CharDataBase &enemDB, &shotDB;
 	const EffectDataBase &effectDB;
+	const OptionDataBase &optionDB;
 	
 	Stage stage;
 	const IMG *bgImg, *lifeImg;
@@ -119,7 +119,7 @@ private:
 	void shapeDrawing();		// debug
 
 public:
-	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB,  int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions);
+	Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg);
 	~Game();
 
 	virtual int update();

@@ -3,7 +3,7 @@
 Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg, std::vector<Option *> playerOptions): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg), playerOptions(playerOptions) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
 	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
@@ -204,6 +204,7 @@ void Game::playerShotFlagProcessing() {
 	}
 
 	// player options
+	std::vector<Option *> playerOptions = *player->getOptionsPt();
 	for(const auto &opt: playerOptions) {
 		allocatedPshotFlag = false;
 		for(i = i + 1; i < MAX_SHOT_DISP; i++) {
@@ -250,24 +251,50 @@ void Game::enemyShotFlagProcessing() {
 	Shape *eshotShape;
 	double initEx = 0, initEy = 0, harfshapesize1 = 0, harfshapesize2 = 0;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPoolFlags[i] == true  && enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
-			for(size_t j = 0; j < MAX_SHOT_DISP; j++) {
-				if(shotPoolFlags[j] == false) {
-					initEx = enemyPool[i]->getPoint().getX();
-					initEy = enemyPool[i]->getPoint().getY();
-					harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
-					harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
-					if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
-						eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
-					} else {
-						eshotShape = new Shape(initEx, initEy, harfshapesize1);
+		if(enemyPoolFlags[i] == true) {
+			// main enemy
+			size_t j = 0;
+			if(enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
+				for(j = 0; j < MAX_SHOT_DISP; j++) {
+					if(shotPoolFlags[j] == false) {
+						initEx = enemyPool[i]->getPoint().getX();
+						initEy = enemyPool[i]->getPoint().getY();
+						harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
+						harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
+						if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
+							eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
+						} else {
+							eshotShape = new Shape(initEx, initEy, harfshapesize1);
+						}
+						shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())),			std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
+						shotPoolFlags[j] = true;
+						enemyPool[i]->incShotCnt();
+						break;
 					}
-					shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
-					shotPoolFlags[j] = true;
-					enemyPool[i]->incShotCnt();
-					break;
 				}
 			}
+			const std::vector<Option *> option = *enemyPool[i]->getOptionsPt();
+			for(const auto &opt: option) {
+				if(enemyPool[i]->getCounter() % opt->getShotInterval() == 0) {
+					for(j = j + 1; j < MAX_SHOT_DISP; j++) {
+						if(!shotPoolFlags[j]) {
+							initEx = opt->getCoordPt()->getX();
+							initEy = opt->getCoordPt()->getY();
+							harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(opt->getShotName())) / 2.0;
+							harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(opt->getShotName())) / 2.0;
+							if(std::get<CHDB_SHAPE>(shotDB.at(opt->getShotName())) == "rect") {
+								eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
+							} else {
+								eshotShape = new Shape(initEx, initEy, harfshapesize1);
+							}
+							shotPool[j] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), eshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())), opt->getShotCnt(), nullptr);
+							shotPoolFlags[j] = true;
+							opt->incShotCnt();
+							break;
+						}
+					} 
+				}
+			} 
 		}
 	}
 }
@@ -314,7 +341,16 @@ void Game::enemyProcessing() {
 						enemShape = new Shape(poolInitPx - harfshapesize1, poolInitPy - harfshapesize2, poolInitPx + harfshapesize1, poolInitPy + harfshapesize2);
 					else
 						enemShape = new Shape(poolInitPx, poolInitPy, harfshapesize1);
-					enem = new Enemy(poolInitPx, poolInitPy, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), std::get<CHDB_ANIM_COUNT>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)));
+
+					std::vector<Option *> options;
+					if(optionDB.count(poolEnemyName) == 1) {
+						for(const auto &opt: optionDB.at(poolEnemyName)) {
+							options.emplace_back(new Option(Point(std::get<OPDB_X>(opt), std::get<OPDB_Y>(opt)), std::get<OPDB_IMG>(opt), std::get<OPDB_ANIM_COUNT>(opt), std::get<OPDB_SHOTNAME>(opt), std::get<OPDB_SHOTTYPE>(opt), std::get<OPDB_SHOTSPEED>(opt), std::get<OPDB_SHOTINTERVAL>(opt)));
+						}
+					}
+
+					enem = new Enemy(poolInitPx, poolInitPy, poolMovePattern, poolMoveSpeed, poolMoveAngle, poolShotPattern, poolShotSpeed, poolShotInterval, std::get<CHDB_IMG>(enemDB.at(poolEnemyName)), std::get<CHDB_ANIM_COUNT>(enemDB.at(poolEnemyName)), enemShape, poolShotName, std::get<CHDB_HP_OR_POWER>(enemDB.at(poolEnemyName)), options);
+
 					enemyPool[i] = enem;
 					enemyPoolFlags[i] = true;
 					break;
@@ -618,6 +654,7 @@ MitSTG::MitSTG() {
 	// Create player datas.
 	double harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(players["Shirokami_chann"]) / 2.0;
 	double harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(players["Shirokami_chann"]) / 2.0;
+	std::vector<Option *> playerOptions;
 	initPx = WndCenter.getX(), initPy = (double)wndArea.bottom - 100;
 	if(std::get<CHDB_SHAPE>(players["Shirokami_chann"]) == "rect")
 		pShape = new Shape(initPx - harfshapesize1, initPy - harfshapesize2, initPx + harfshapesize1, initPy + harfshapesize2);
@@ -638,7 +675,6 @@ MitSTG::MitSTG() {
 MitSTG::~MitSTG() {
 	if(nowScene != nullptr) delete nowScene;
 	delete pShape;
-	for(auto &i: playerOptions) delete i;
 	delete player;
 	delete lifeImg;
 }
@@ -678,7 +714,7 @@ int MitSTG::loading() {
 		shapeDataBuf = std::stod(parsed[8]);
 		std::get<CHDB_SHAPE_DATA2>(players[parsed[0]]) = shapeDataBuf;
 
-		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 5;
+		std::get<CHDB_HP_OR_POWER>(players[parsed[0]]) = 500;
 
 		delete[] loadDivHandles;
 	}
@@ -694,8 +730,8 @@ int MitSTG::loading() {
 		divNum = std::stoi(parsed[2]);
 
 		loadDivHandles = new int[divNum];
-		GetImageSize_File(("dat\\image\\player\\" + parsed[1]).c_str(), &bufX, &bufY);
-		LoadDivGraph(("dat\\image\\player\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
+		GetImageSize_File(("dat\\image\\option\\" + parsed[1]).c_str(), &bufX, &bufY);
+		LoadDivGraph(("dat\\image\\option\\" + parsed[1]).c_str(), divNum, divNum, 1, bufX / divNum, bufY, loadDivHandles);
 		optionIndex = options[parsed[0]].size();
 		options[parsed[0]].emplace_back();
 		for(size_t i = 0; i < divNum; i++) std::get<OPDB_IMG>(options[parsed[0]].at(optionIndex)).emplace_back(new IMG(loadDivHandles[i]));
@@ -807,7 +843,7 @@ void MitSTG::changeScene(SceneType scene) {
 		break;
 	case SCENE_GAME_1:
 		if(nowScene != nullptr) delete nowScene;
-		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, effects, 0, 0, wndArea.right, wndArea.bottom, lifeImg, playerOptions);
+		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, effects, options, 0, 0, wndArea.right, wndArea.bottom, lifeImg);
 		break;
 	case SCENE_GAMEOVER:
 		Scene *buf = new GameOverScene();
