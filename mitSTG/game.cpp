@@ -251,7 +251,7 @@ void Game::enemyShotFlagProcessing() {
 	Shape *eshotShape;
 	double initEx = 0, initEy = 0, harfshapesize1 = 0, harfshapesize2 = 0;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPoolFlags[i] == true) {
+		if(enemyPoolFlags[i] == true && enemyPool[i]->getShotFlag()) {
 			// main enemy
 			size_t j = 0;
 			if(enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {

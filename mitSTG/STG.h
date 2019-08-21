@@ -179,6 +179,8 @@ friend EnemyMover;
 private:
 	// The number of bullets shot by this enemy
 	int shotCnt;
+
+	bool shotFlag;
 	
 	std::string movePattern;
 	double moveAngle;
@@ -190,6 +192,7 @@ public:
 	virtual void draw();
 
 	int getShotCnt() const;
+	bool getShotFlag() const;
 };
 
 class EnemyMover {

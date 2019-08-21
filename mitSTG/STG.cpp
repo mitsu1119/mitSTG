@@ -277,7 +277,7 @@ void Player::draw() {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, std::string movePattern,  double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP, options), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0) {
+Enemy::Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP, options), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0), shotFlag(true) {
 }
 
 void Enemy::incShotCnt() {
@@ -286,6 +286,10 @@ void Enemy::incShotCnt() {
 
 int Enemy::getShotCnt() const {
 	return shotCnt;
+}
+
+bool Enemy::getShotFlag() const {
+	return shotFlag;
 }
 
 void Enemy::draw() {
@@ -313,9 +317,11 @@ void EnemyMover::straight(Enemy *enemy) {
 
 void EnemyMover::fuji(Enemy *enemy) {
 	bossBuf = enemy;
-	if(enemy->counter < 240) {
+	if(enemy->counter < 250) {
+		enemy->shotFlag = false;
 		enemy->point.moveY(enemy->speed * enemy->moveAngle);
 	}  else {
+		enemy->shotFlag = true;
 		enemy->point.moveX(enemy->speed);
 		enemy->point.moveY(2.0 / 3.0 * cos(enemy->counter / 30));
 		if(enemy->point.getX() > 430) enemy->speed *= -1;
@@ -325,6 +331,7 @@ void EnemyMover::fuji(Enemy *enemy) {
 }
 
 void EnemyMover::fuji_left(Enemy *enemy) {
+	enemy->shotFlag = bossBuf->shotFlag;
 	if(bossBuf->HP <= 0) {
 		enemy->HP = 0;
 		return;
@@ -335,6 +342,7 @@ void EnemyMover::fuji_left(Enemy *enemy) {
 }
 
 void EnemyMover::fuji_right(Enemy *enemy) {
+	enemy->shotFlag = bossBuf->shotFlag;
 	if(bossBuf->HP <= 0) {
 		enemy->HP = 0;
 		return;
@@ -345,6 +353,7 @@ void EnemyMover::fuji_right(Enemy *enemy) {
 }
 
 void EnemyMover::fuji_back_left(Enemy *enemy) {
+	enemy->shotFlag = bossBuf->shotFlag;
 	if(bossBuf->HP <= 0) {
 		enemy->HP = 0;
 		return;
@@ -352,9 +361,10 @@ void EnemyMover::fuji_back_left(Enemy *enemy) {
 	enemy->point.setX(bossBuf->getPointPt()->getX() + 50);
 	enemy->point.setY(bossBuf->getPointPt()->getY() - 133);
 	enemy->counter++;
-}
+}	 
 
 void EnemyMover::fuji_back_right(Enemy *enemy) {
+	enemy->shotFlag = bossBuf->shotFlag;
 	if(bossBuf->HP <= 0) {
 		enemy->HP = 0;
 		return;
