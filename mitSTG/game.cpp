@@ -3,7 +3,7 @@
 Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), playerLowEffectIndex(0), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
 	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
@@ -166,13 +166,41 @@ void Game::playerKeyProcessing() {
 		else if(player->getPointPt()->getY() + harfY / 2.0 > bottomY) player->setCoord(player->getPointPt()->getX(), bottomY - harfY / 2.0);
 	}
 	if(checkKeyPShotBt) playerShotFlagProcessing();
-	if(checkKeyLowPlayer) player->setSpeed(playerOriginalSpeed * 0.6);
-	else player->setSpeed(playerOriginalSpeed);
+	if(checkKeyLowPlayer) {
+		if(player->getSpeed() != playerOriginalSpeed * 0.6) {
+			size_t effectIndex = searchAddableEffectPool();
+			if(effectIndex != 0 || effectPoolFlags[0] == false) {
+				effectPoolFlags[effectIndex] = true;
+				effectPool[effectIndex] = new Effect();
+				effectPool[effectIndex]->add(Point(0, 0), std::get<EFDB_IMG>(effectDB.at("lazerRange")), std::get<EFDB_ANIM_COUNT>(effectDB.at("lazerRange")), player);
+				playerLowEffectIndex = effectIndex;
+			}
+		}
+		player->setSpeed(playerOriginalSpeed * 0.6);
+	} else {
+		if(player->getSpeed() != playerOriginalSpeed) destroyEffectPool(playerLowEffectIndex);
+		player->setSpeed(playerOriginalSpeed);
+	}
 }
 
 void Game::playerProcessing() {
 	playerKeyProcessing();
 	if(playerInvincibleFlag != -1 && counter - playerInvincibleFlag > 100) playerInvincibleFlag = -1;
+
+	if(player->getSpeed() != playerOriginalSpeed && playerLockons.size() < MAX_PLAYER_LOCKONS) {
+		for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
+			if(std::find(playerLockons.begin(), playerLockons.end(), enemyPool[i]) != playerLockons.end()) continue;
+			if(enemyPoolFlags[i] && std::pow(enemyPool[i]->getPointPt()->getX() - player->getPointPt()->getX(), 2) + std::pow(enemyPool[i]->getPointPt()->getY() - player->getPointPt()->getY(), 2) < std::pow(180, 2)) {
+				size_t effectIndex = searchAddableEffectPool();
+				if(effectIndex != 0 || !effectPoolFlags[0]) {
+					effectPool[effectIndex] = new Effect();
+					effectPool[effectIndex]->add(Point(0, 0), std::get<EFDB_IMG>(effectDB.at("lockon")), std::get<EFDB_ANIM_COUNT>(effectDB.at("lockon")), enemyPool[i]);
+					effectPoolFlags[effectIndex] = true;
+					playerLockons.emplace_back(enemyPool[i]);
+				}
+			}
+		}
+	}
 }
 
 void Game::playerShotFlagProcessing() {
@@ -196,7 +224,7 @@ void Game::playerShotFlagProcessing() {
 				pshotShape = new Shape(initPx, initPy, harfshapesize1);
 			}
 
-			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
+			playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())), 0, enemyPool[0]);
 			playerShotPoolFlags[i] = true;
 			allocatedPshotFlag = true;
 			break;
@@ -369,7 +397,7 @@ void Game::enemyProcessing() {
 			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 500 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 500 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 500 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 500) destroyEnemyPool(i);
 			else if(enemyPool[i]->damaged(0) <= 0) {
 				size_t effectIndex = searchAddableEffectPool();
-				if(i != 0 || effectPoolFlags[0] == false) {
+				if(effectIndex != 0 || effectPoolFlags[0] == false) {
 					effectPoolFlags[effectIndex] = true;
 					effectPool[effectIndex] = new Effect();
 					effectPool[effectIndex]->add(enemyPool[i]->getPoint(), std::get<EFDB_IMG>(effectDB.at("miniBomb")), std::get<EFDB_ANIM_COUNT>(effectDB.at("miniBomb")));
@@ -547,9 +575,9 @@ void Game::draw() {
 	ClearDrawScreen();
 
 	bgDrawing();
-	effectDrawing();
 	enemyDrawing();
 	playerDrawing();
+	effectDrawing();
 	playerAndEnemyShotDrawing();
 	systemDrawing();
 
@@ -664,7 +692,7 @@ MitSTG::MitSTG() {
 	>(i), std::get<OPDB_SHOTNAME>(i), std::get<OPDB_SHOTTYPE>(i), std::get<OPDB_SHOTSPEED>(i), std::get<OPDB_SHOTINTERVAL>(i)));
 
 	initPlayerLifeNum = std::get<CHDB_HP_OR_POWER>(players["Shirokami_chann"]);
-	player = new Player(initPx, initPy, 5.0, "player1", -18.0, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", initPlayerLifeNum, playerOptions);
+	player = new Player(initPx, initPy, 5.0, "player2", 60, 8, std::get<CHDB_IMG>(players["Shirokami_chann"]), playerLeftImages["Shirokami_chann"], playerRightImages["Shirokami_chann"], std::get<CHDB_ANIM_COUNT>(players["Shirokami_chann"]), pShape, "Varistor", initPlayerLifeNum, playerOptions);
 
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");

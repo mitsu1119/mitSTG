@@ -1,3 +1,5 @@
 #effectName,imageName,imageDivNum,animationCount
 playerDamaged,playerDeath.png,1,1
 miniBomb,bombmini.png,11,4
+lazerRange,lazerRange.png,1,1
+lockon,lockon.png,1,1

@@ -233,6 +233,8 @@ private:
 		AEFAC_COORD, AEFAC_IMG, AEFAC_ANIM_COUNT
 	};
 	std::vector<AnimEffectElement> animimages;
+
+	std::vector<std::pair<AnimEffectElement, const Character *>> dependimages;
 	
 	int counter;
 
@@ -243,6 +245,7 @@ public:
 
 	void add(double initX, double initY, const IMG * image, double speed, double angle);
 	void add(Point point, std::vector<const IMG *> image, unsigned long animationCount);
+	void add(Point point, std::vector<const IMG *> image, unsigned long animationCount, const Character *owner);
 	void drawNextMove();
 
 	bool areAllEffectsOutOfArea(double areaLeft, double areaTop, double areaRight, double areaBottom) const;

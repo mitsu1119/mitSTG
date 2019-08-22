@@ -1,8 +1,8 @@
 #bgImage,scrollSpeed,,,,,,,,,
 bg1.png,1,,,,,,,,,
 #enemyType,initPx,initPy,timing,moveType,moveSpeed,moveAngle,shotImage,shotType,shotSpeed,shotInterval
-Fuji,270,-200,10,fuji,1,90,Rocket,target,10,1
-Fuji_LeftWing,401,-177,10,fuji_left,1,90,Rocket,swirl,8,1
-Fuji_RightWing,139,-177,10,fuji_right,1,90,Rocket,swirl,8,1
-Fuji_BackLeftWing,401,-177,10,fuji_back_left,1,90,Rocket,swirl,8,1
-Fuji_BackRightWing,139,-177,10,fuji_back_right,1,90,Rocket,swirl,8,1
+Sphere,-30,100,20,straight,3,0,Rocket,swirl,5,2
+Sphere,-30,100,40,straight,3,0,Rocket,swirl,5,2
+Sphere,-30,100,60,straight,3,0,Rocket,swirl,5,2
+Sphere,-30,100,80,straight,3,0,Rocket,swirl,5,2
+Sphere,-30,100,100,straight,3,0,Rocket,swirl,5,2

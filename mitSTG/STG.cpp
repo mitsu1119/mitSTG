@@ -387,6 +387,10 @@ void Effect::add(Point point, std::vector<const IMG *> image, unsigned long anim
 	animimages.emplace_back(point, image, animationCount);
 }
 
+void Effect::add(Point point, std::vector<const IMG *> image, unsigned long animationCount, const Character *owner) {
+	dependimages.emplace_back(std::make_tuple(point, image, animationCount), owner);
+}
+
 void Effect::applyNext() {
 	double speed, angle;
 	for(auto &i: moveimages) {
@@ -413,6 +417,13 @@ void Effect::drawNextMove() {
 		harfX = image->getSizeX() / 2.0;
 		harfY = image->getSizeY() / 2.0;
 		DrawGraph((int)(std::get<AEFAC_COORD>(i).getX() - harfX), (int)(std::get<AEFAC_COORD>(i).getY() - harfY), image->getHandle(), true);
+	}
+
+	for(const auto &i: dependimages) {
+		image = std::get<AEFAC_IMG>(i.first).at((counter % (std::get<AEFAC_IMG>(i.first).size() * std::get<AEFAC_ANIM_COUNT>(i.first))) / std::get<AEFAC_ANIM_COUNT>(i.first));
+		harfX = image->getSizeX() / 2.0;
+		harfY = image->getSizeY() / 2.0;
+		DrawGraph((int)(i.second->getPointPt()->getX() + std::get<AEFAC_COORD>(i.first).getX() - harfX), (int)(i.second->getPointPt()->getY() + std::get<AEFAC_COORD>(i.first).getY() - harfY), image->getHandle(), true);
 	}
 }
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include <vector>
 #include <unordered_map>
 #include <tuple>
@@ -45,6 +46,7 @@ enum EffectDBAccessor {
 constexpr size_t MAX_EFFECT_DISP = 50;
 constexpr size_t MAX_ENEMY_DISP = 20;
 constexpr size_t MAX_SHOT_DISP = 500;
+constexpr size_t MAX_PLAYER_LOCKONS = 10;
 class Game : public Scene {
 private:
 	Player *player;
@@ -63,6 +65,8 @@ private:
 	
 	Direction keyDirection;
 	bool checkKeyPShotBt, checkKeyLowPlayer;
+	size_t playerLowEffectIndex;
+	std::vector<const Character *> playerLockons;
 	int timeOfLastPShot;
 	
 	std::vector<Effect *> effectPool;
