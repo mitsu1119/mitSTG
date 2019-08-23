@@ -234,7 +234,7 @@ void Game::playerShotFlagProcessing() {
 					pshotShape = new Shape(initPx, initPy, harfshapesize1);
 				}
 
-				playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())), 0, enemyPool[0]);
+				playerShotPool[i] = new Shot(player->getPoint(), player->getShotSpeed(), player->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(player->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(player->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(player->getShotName())));
 				playerShotPoolFlags[i] = true;
 				allocatedPshotFlag = true;
 				break;
@@ -263,7 +263,7 @@ void Game::playerShotFlagProcessing() {
 				if(opt->getShotPattern() != "option2") {
 					playerShotPool[i] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())));
 				} else {
-					playerShotPool[i] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())), 0, playerLockons.front().first);
+					playerShotPool[i] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), pshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())), true, 0, playerLockons.front().first);
 					playerLockons.pop_front();
 				}
 				playerShotPoolFlags[i] = true;
@@ -289,6 +289,7 @@ void Game::playerShotMoving() {
 			if(pt->getX() + harfX < leftX -100 || pt->getX() - harfX > rightX + 100 || pt->getY() + harfY < topY - 100 || pt->getY() - harfY > bottomY + 100) {
 				destroyPshotPool(i);
 			}
+			if(playerShotPool[i]->isLazer() && playerShotPool[i]->lazerDestroyableFlag()) destroyPshotPool(i);
 		}
 	}
 }
@@ -313,7 +314,7 @@ void Game::enemyShotFlagProcessing() {
 						} else {
 							eshotShape = new Shape(initEx, initEy, harfshapesize1);
 						}
-						shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())),			std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, enemyPool[i]->getShotCnt(), nullptr);
+						shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())),			std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, false, enemyPool[i]->getShotCnt(), nullptr);
 						shotPoolFlags[j] = true;
 						enemyPool[i]->incShotCnt();
 						break;
@@ -334,7 +335,7 @@ void Game::enemyShotFlagProcessing() {
 							} else {
 								eshotShape = new Shape(initEx, initEy, harfshapesize1);
 							}
-							shotPool[j] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), eshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())), opt->getShotCnt(), nullptr);
+							shotPool[j] = new Shot(*opt->getCoordPt(), opt->getShotSpeed(), opt->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(opt->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(opt->getShotName())), eshotShape, std::get<CHDB_HP_OR_POWER>(shotDB.at(opt->getShotName())), false, opt->getShotCnt(), nullptr);
 							shotPoolFlags[j] = true;
 							opt->incShotCnt();
 							break;
@@ -465,7 +466,8 @@ void Game::collisionProcessing() {
 				}
 			}
 			if(delFlag) {
-				destroyPshotPool(i);
+				if(!playerShotPool[i]->isLazer()) destroyPshotPool(i);
+				else playerShotPool[i]->incLazerState();
 				delFlag = false;
 			}
 		}

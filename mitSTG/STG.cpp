@@ -1,7 +1,14 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, int number, Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target) {
+Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, bool isLazer, int number, Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target), lazerFlag(isLazer) {
+	if(lazerFlag) {
+		tracingSize = 10;
+		lazerState = 1;
+	} else {
+		tracingSize = 0;
+		lazerState = 0;
+	}
 }
 
 void Shot::updateShape() const {
@@ -43,13 +50,36 @@ void Shot::setNullTarget() {
 	target = nullptr;
 }
 
+void Shot::incLazerState() {
+	lazerState++;
+}
+
+bool Shot::isLazer() const {
+	return lazerFlag;
+}
+
+bool Shot::lazerDestroyableFlag() const {
+	if(!lazerFlag) return false;
+	return (lazerState == 3);
+}
+
 int Shot::getPower() const {
 	return damagePower;
 }
 
-void Shot::draw() const {
-	DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
-	// DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+void Shot::draw() {
+	if(lazerFlag) {
+		DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		for(auto i: tracing) {
+			DrawGraph((int)i.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)i.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		}
+		if(lazerState == 2) {
+			tracing.pop_front();
+			if(tracing.empty()) lazerState = 3;
+		}
+	} else {
+		DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+	}
 }
 // -------------------------------------------------------------------------------------
 
@@ -73,23 +103,27 @@ void ShotMover::option1(Shot *shot) {
 }
 
 void ShotMover::option2(Shot *shot) {
+	if(shot->lazerFlag) {
+		if(shot->lazerState != 1) return;
+		if(shot->tracing.size() >= shot->tracingSize) shot->tracing.pop_front();
+		shot->tracing.emplace_back(shot->point.getX(), shot->point.getY());
+	}
 	if(shot->target == nullptr) {
 		shot->moveX(shot->speed / 2 * cos(shot->angle));
 		shot->moveY(shot->speed / 2 * sin(shot->angle));
-		shot->counter++;
-		return;
+	} else {
+		double t = (1.0 / shot->speed) * shot->counter;
+		double p0x = player->getPointPt()->getX(), p0y = player->getPointPt()->getY();
+		double p3x = shot->target->getPointPt()->getX(), p3y = shot->target->getPointPt()->getY();
+		double rad = atan2(p0y - p3y, p0x - p3x);
+		double p1x = p0x - 20, p1y = p0y + 200;
+		double p2x = (p0x + p3x) / 2 + 3 * cos(rad + M_PI / 2), p2y = (p0y + p3y) / 2 + 3 * sin(rad + M_PI / 2);
+		double x = (1 - t) * (1 - t) * (1 - t) * p0x + 3 * (1 - t) * (1 - t) * t * p1x + 3 * (1 - t) * t * t * p2x + t * t * t * p3x;
+		double y = (1 - t) * (1 - t) * (1 - t) * p0y + 3 * (1 - t) * (1 - t) * t * p1y + 3 * (1 - t) * t * t * p2y + t * t * t * p3y;
+		shot->angle = atan2(y - shot->point.getY(), x - shot->point.getX());
+		shot->point.setX(x);
+		shot->point.setY(y);
 	}
-	double t = (1.0 / shot->speed) * shot->counter;
-	double p0x = player->getPointPt()->getX(), p0y = player->getPointPt()->getY();
-	double p3x = shot->target->getPointPt()->getX(), p3y = shot->target->getPointPt()->getY();
-	double rad = atan2(p0y - p3y, p0x - p3x);
-	double p1x = p0x - 20, p1y = p0y + 200;
-	double p2x = (p0x + p3x) / 2 + 3 * cos(rad + M_PI / 2), p2y = (p0y + p3y) / 2 + 3 * sin(rad + M_PI / 2);
-	double x = (1 - t) * (1 - t) * (1 - t) * p0x + 3 * (1 - t) * (1 - t) * t * p1x + 3 * (1 - t) * t * t * p2x + t * t * t * p3x;
-	double y = (1 - t) * (1 - t) * (1 - t) * p0y + 3 * (1 - t) * (1 - t) * t * p1y + 3 * (1 - t) * t * t * p2y + t * t * t * p3y;
-	shot->angle = atan2(y - shot->point.getY(), x - shot->point.getX());
-	shot->point.setX(x);
-	shot->point.setY(y);
 	shot->counter++;
 }
 

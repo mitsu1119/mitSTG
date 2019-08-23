@@ -31,6 +31,11 @@ private:
 	size_t animationNum;
 	unsigned long animationCount;
 
+	bool lazerFlag;
+	int lazerState;		// 0: not existing, 1: existing, 2: existing only tracing
+	size_t tracingSize;
+	std::deque<Point> tracing;
+
 	std::string movePattern;
 	double speed, angle;
 	int counter;
@@ -48,9 +53,10 @@ private:
 public:
 	// power: For player shot.
 	// number, target: For enemy shot.
-	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, int number = 0, Character *target = nullptr);
+	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, bool isLazer = false, int number = 0, Character *target = nullptr);
 
 	void setNullTarget();
+	void incLazerState();
 
 	Point getImageSize() const;
 	const Shape *getShapePt() const;
@@ -60,7 +66,9 @@ public:
 	std::string getMovePattern() const;
 	Character *getTarget() const;
 	int getPower() const;
-	void draw() const;
+	bool isLazer() const;
+	bool lazerDestroyableFlag() const;
+	void draw();
 };
 // ---------------------------------------------------------------------------------------------------------------------------------
 
