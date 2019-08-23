@@ -5,6 +5,7 @@
 #include <fstream>
 #include <deque>
 #include <tuple>
+#include <random>
 #include <unordered_map>
 #include "util.h"
 #include "collision.h"
@@ -76,6 +77,9 @@ public:
 class Player;
 class ShotMover {
 private:
+	std::mt19937 mt;
+	std::uniform_real_distribution<> realRand;
+
 	typedef void(ShotMover:: *SFUNC)(Shot *shot);
 	std::unordered_map<std::string, SFUNC> moveFuncTable;
 	const Player *player;
@@ -86,6 +90,7 @@ private:
 	void target(Shot *shot);
 	void swirl(Shot *shot);
 	void evdir(Shot *shot);
+	void random(Shot *shot);
 
 public:
 	ShotMover(const Player *player);
@@ -220,6 +225,8 @@ private:
 	void straight_down(Enemy *enemy);
 	void straight_stop(Enemy *enemy);
 	void straight_back(Enemy *enemy);
+	void left_to_right_revu(Enemy *enemy);
+	void right_to_left_revu(Enemy *enemy);
 	void fuji(Enemy *enemy);
 	void fuji_left(Enemy *enemy);
 	void fuji_right(Enemy *enemy);

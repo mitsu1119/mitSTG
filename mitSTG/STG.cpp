@@ -110,12 +110,16 @@ void Shot::draw() {
 
 // ------------------------- ShotMover class -----------------------------------------
 ShotMover::ShotMover(const Player *player): player(player) {
+	std::random_device seed;
+	mt = std::mt19937(seed());
+
 	moveFuncTable["player1"] = &ShotMover::player1;
 	moveFuncTable["option1"] = &ShotMover::option1;
 	moveFuncTable["option2"] = &ShotMover::option2;
 	moveFuncTable["target"] = &ShotMover::target;
 	moveFuncTable["swirl"] = &ShotMover::swirl;
 	moveFuncTable["evdir"] = &ShotMover::evdir;
+	moveFuncTable["random"] = &ShotMover::random;
 }
 
 void ShotMover::player1(Shot *shot) {
@@ -169,6 +173,13 @@ void ShotMover::swirl(Shot *shot) {
 
 void ShotMover::evdir(Shot *shot) {
 	if(shot->counter == 0) shot->angle = (double)shot->number * 2 * M_PI / 40.0;
+	shot->moveX(shot->speed * cos(shot->angle));
+	shot->moveY(shot->speed * sin(shot->angle));
+	shot->counter++;
+}
+
+void ShotMover::random(Shot *shot) {
+	if(shot->counter == 0) shot->angle = 2 * M_PI * realRand(mt);
 	shot->moveX(shot->speed * cos(shot->angle));
 	shot->moveY(shot->speed * sin(shot->angle));
 	shot->counter++;
@@ -391,6 +402,8 @@ EnemyMover::EnemyMover(): bossBuf(nullptr) {
 	moveFuncTable["straight_down"] = &EnemyMover::straight_down;
 	moveFuncTable["straight_stop"] = &EnemyMover::straight_stop;
 	moveFuncTable["straight_back"] = &EnemyMover::straight_back;
+	moveFuncTable["left_to_right_revu"] = &EnemyMover::left_to_right_revu;
+	moveFuncTable["right_to_left_revu"] = &EnemyMover::right_to_left_revu;
 	moveFuncTable["fuji"] = &EnemyMover::fuji;
 	moveFuncTable["fuji_left"] = &EnemyMover::fuji_left;
 	moveFuncTable["fuji_right"] = &EnemyMover::fuji_right;
@@ -443,6 +456,22 @@ void EnemyMover::straight_back(Enemy *enemy) {
 		enemy->point.moveX(-enemy->speed * cos(enemy->moveAngle));
 		enemy->point.moveY(-enemy->speed * sin(enemy->moveAngle));
 	}
+	enemy->counter++;
+}
+
+void EnemyMover::left_to_right_revu(Enemy *enemy) {
+	if(enemy->counter < 600) enemy->point.moveY(-enemy->speed);
+	else if(enemy->counter < 940) enemy->point.moveX(enemy->speed);
+	else enemy->point.moveY(enemy->speed);
+
+	enemy->counter++;
+}
+
+void EnemyMover::right_to_left_revu(Enemy *enemy) {
+	if(enemy->counter < 600) enemy->point.moveY(-enemy->speed);
+	else if(enemy->counter < 940) enemy->point.moveX(-enemy->speed);
+	else enemy->point.moveY(enemy->speed);
+
 	enemy->counter++;
 }
 
