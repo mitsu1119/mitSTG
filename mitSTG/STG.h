@@ -35,7 +35,7 @@ private:
 	double speed, angle;
 	int counter;
 
-	const Character *target;
+	Character *target;
 
 	// Damage value to the enemy when the owner is player.
 	int damagePower;
@@ -48,7 +48,9 @@ private:
 public:
 	// power: For player shot.
 	// number, target: For enemy shot.
-	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, int number = 0, const Character *target = nullptr);
+	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, int number = 0, Character *target = nullptr);
+
+	void setNullTarget();
 
 	Point getImageSize() const;
 	const Shape *getShapePt() const;
@@ -56,6 +58,7 @@ public:
 	void moveX(double dx);
 	void moveY(double dy);
 	std::string getMovePattern() const;
+	Character *getTarget() const;
 	int getPower() const;
 	void draw() const;
 };
@@ -70,8 +73,8 @@ private:
 	const Player *player;
 
 	void player1(Shot *shot);
-	void player2(Shot *shot);
 	void option1(Shot *shot);
+	void option2(Shot *shot);
 	void target(Shot *shot);
 	void swirl(Shot *shot);
 

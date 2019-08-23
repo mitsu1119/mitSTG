@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, int number, const Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target) {
+Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, int number, Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target) {
 }
 
 void Shot::updateShape() const {
@@ -35,6 +35,14 @@ std::string Shot::getMovePattern() const {
 	return movePattern;
 }
 
+Character *Shot::getTarget() const {
+	return target;
+}
+
+void Shot::setNullTarget() {
+	target = nullptr;
+}
+
 int Shot::getPower() const {
 	return damagePower;
 }
@@ -48,8 +56,8 @@ void Shot::draw() const {
 // ------------------------- ShotMover class -----------------------------------------
 ShotMover::ShotMover(const Player *player): player(player) {
 	moveFuncTable["player1"] = &ShotMover::player1;
-	moveFuncTable["player2"] = &ShotMover::player2;
 	moveFuncTable["option1"] = &ShotMover::option1;
+	moveFuncTable["option2"] = &ShotMover::option2;
 	moveFuncTable["target"] = &ShotMover::target;
 	moveFuncTable["swirl"] = &ShotMover::swirl;
 }
@@ -60,7 +68,17 @@ void ShotMover::player1(Shot *shot) {
 	shot->counter++;
 }
 
-void ShotMover::player2(Shot *shot) {
+void ShotMover::option1(Shot *shot) {
+	player1(shot);
+}
+
+void ShotMover::option2(Shot *shot) {
+	if(shot->target == nullptr) {
+		shot->moveX(shot->speed / 2 * cos(shot->angle));
+		shot->moveY(shot->speed / 2 * sin(shot->angle));
+		shot->counter++;
+		return;
+	}
 	double t = (1.0 / shot->speed) * shot->counter;
 	double p0x = player->getPointPt()->getX(), p0y = player->getPointPt()->getY();
 	double p3x = shot->target->getPointPt()->getX(), p3y = shot->target->getPointPt()->getY();
@@ -69,14 +87,10 @@ void ShotMover::player2(Shot *shot) {
 	double p2x = (p0x + p3x) / 2 + 3 * cos(rad + M_PI / 2), p2y = (p0y + p3y) / 2 + 3 * sin(rad + M_PI / 2);
 	double x = (1 - t) * (1 - t) * (1 - t) * p0x + 3 * (1 - t) * (1 - t) * t * p1x + 3 * (1 - t) * t * t * p2x + t * t * t * p3x;
 	double y = (1 - t) * (1 - t) * (1 - t) * p0y + 3 * (1 - t) * (1 - t) * t * p1y + 3 * (1 - t) * t * t * p2y + t * t * t * p3y;
-	shot->angle = atan2(shot->point.getY() - y, shot->point.getX() - x);
+	shot->angle = atan2(y - shot->point.getY(), x - shot->point.getX());
 	shot->point.setX(x);
 	shot->point.setY(y);
 	shot->counter++;
-}
-
-void ShotMover::option1(Shot *shot) {
-	player1(shot);
 }
 
 void ShotMover::target(Shot *shot) {

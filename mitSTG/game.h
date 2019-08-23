@@ -66,7 +66,8 @@ private:
 	Direction keyDirection;
 	bool checkKeyPShotBt, checkKeyLowPlayer;
 	size_t playerLowEffectIndex;
-	std::vector<const Character *> playerLockons;
+	bool playerLockonLazerFlag;
+	std::deque<std::pair<Character *, size_t>> playerLockons;
 	int timeOfLastPShot;
 	
 	std::vector<Effect *> effectPool;
