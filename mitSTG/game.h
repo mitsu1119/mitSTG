@@ -43,10 +43,10 @@ enum EffectDBAccessor {
 	EFDB_IMG, EFDB_ANIM_COUNT
 };
 
-constexpr size_t MAX_EFFECT_DISP = 50;
-constexpr size_t MAX_ENEMY_DISP = 20;
+constexpr size_t MAX_EFFECT_DISP = 100;
+constexpr size_t MAX_ENEMY_DISP = 200;
 constexpr size_t MAX_SHOT_DISP = 500;
-constexpr size_t MAX_PLAYER_LOCKONS = 10;
+constexpr size_t MAX_PLAYER_LOCKONS = 5;
 class Game : public Scene {
 private:
 	Player *player;

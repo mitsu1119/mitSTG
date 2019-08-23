@@ -192,7 +192,7 @@ void Game::playerProcessing() {
 	playerKeyProcessing();
 	if(playerInvincibleFlag != -1 && counter - playerInvincibleFlag > 100) playerInvincibleFlag = -1;
 
-	if(player->getSpeed() != playerOriginalSpeed && playerLockons.size() < MAX_PLAYER_LOCKONS) {
+	if(player->getSpeed() != playerOriginalSpeed && playerLockons.size() < MAX_PLAYER_LOCKONS && counter - timeOfLastPShot > 80) {
 		for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 			if(std::find_if(playerLockons.begin(), playerLockons.end(), [&](std::pair<Character *, size_t> &ch) { return ch.first == enemyPool[i]; }) != playerLockons.end()) continue;
 			if(enemyPoolFlags[i] && std::pow(enemyPool[i]->getPointPt()->getX() - player->getPointPt()->getX(), 2) + std::pow(enemyPool[i]->getPointPt()->getY() - player->getPointPt()->getY(), 2) < std::pow(180, 2)) {
@@ -202,6 +202,7 @@ void Game::playerProcessing() {
 					effectPool[effectIndex]->add(Point(0, 0), std::get<EFDB_IMG>(effectDB.at("lockon")), std::get<EFDB_ANIM_COUNT>(effectDB.at("lockon")), enemyPool[i]);
 					effectPoolFlags[effectIndex] = true;
 					playerLockons.emplace_back(enemyPool[i], effectIndex);
+					if(playerLockons.size() == MAX_PLAYER_LOCKONS) break;
 				}
 			}
 		}
@@ -413,7 +414,7 @@ void Game::enemyProcessing() {
 		if(enemyPoolFlags[i]) {
 			harfshapesize1 = enemyPool[i]->getImage()->getSizeX() / 2.0;
 			harfshapesize2 = enemyPool[i]->getImage()->getSizeY() / 2.0;
-			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 500 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 500 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 500 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 500) destroyEnemyPool(i);
+			if(enemyPool[i]->getPointPt()->getX() + harfshapesize1 < leftX - 1000 || enemyPool[i]->getPointPt()->getY() + harfshapesize2 < topY - 1000 || enemyPool[i]->getPointPt()->getX() - harfshapesize1 > rightX + 1000 || enemyPool[i]->getPointPt()->getY() - harfshapesize2 > bottomY + 1000) destroyEnemyPool(i);
 			else if(enemyPool[i]->damaged(0) <= 0) {
 				size_t effectIndex = searchAddableEffectPool();
 				if(effectIndex != 0 || effectPoolFlags[0] == false) {

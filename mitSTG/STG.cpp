@@ -375,6 +375,7 @@ void Enemy::draw() {
 // ---------------------- EnemyMover class ---------------------------------------------
 EnemyMover::EnemyMover(): bossBuf(nullptr) {
 	moveFuncTable["straight"] = &EnemyMover::straight;
+	moveFuncTable["straight_down"] = &EnemyMover::straight_down;
 	moveFuncTable["fuji"] = &EnemyMover::fuji;
 	moveFuncTable["fuji_left"] = &EnemyMover::fuji_left;
 	moveFuncTable["fuji_right"] = &EnemyMover::fuji_right;
@@ -385,6 +386,18 @@ EnemyMover::EnemyMover(): bossBuf(nullptr) {
 void EnemyMover::straight(Enemy *enemy) {
 	enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
 	enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	enemy->counter++;
+}
+
+void EnemyMover::straight_down(Enemy *enemy) {
+	if(enemy->counter < 320) {
+		enemy->shotFlag = false;
+		enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
+		enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	} else {
+		enemy->shotFlag = true;
+		enemy->point.moveY(enemy->speed);
+	}
 	enemy->counter++;
 }
 

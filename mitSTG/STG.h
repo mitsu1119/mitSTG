@@ -214,6 +214,7 @@ private:
 	Enemy *bossBuf;
 	
 	void straight(Enemy *enemy);
+	void straight_down(Enemy *enemy);
 	void fuji(Enemy *enemy);
 	void fuji_left(Enemy *enemy);
 	void fuji_right(Enemy *enemy);

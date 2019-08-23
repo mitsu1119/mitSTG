@@ -1,10 +1,10 @@
 #characterName,imageName,animationDivNum,animationCount,coordX,coordY,shotName,shotType,shotSpeed,shotInterval
 Shirokami_chann,batteryOptionRev.png,4,4,-20,34,Varistor,option1,-13,1
 Shirokami_chann,batteryOption.png,4,4,20,34,Varistor,option1,-13,1
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
-Shirokami_chann,non.png,4,4,0,0,Varistor,option2,60,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
+Shirokami_chann,non.png,4,4,0,0,Plazer,option2,40,80
 Fuji,batteryOption.png,4,4,0,0,Rocket,swirl,10,1

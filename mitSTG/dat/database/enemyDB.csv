@@ -1,7 +1,9 @@
 #enemyName,imageName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)",life
-Sphere,sphere.png,16,3,circle,42,0,1
+Sphere,sphere.png,16,3,circle,42,0,2
 Fuji,Fuji.png,1,1,rect,36,300,100
 Fuji_LeftWing,FujiLeft.png,1,1,rect,250,36,40
 Fuji_RightWing,FujiRight.png,1,1,rect,250,36,40
 Fuji_BackLeftWing,FujiBackLeft.png,1,1,rect,80,24,20
 Fuji_BackRightWing,FujiBackRight.png,1,1,rect,80,24,20
+Tank,tank.png,1,1,rect,43,38,2
+Tank_left,tank_left.png,1,1,rect,43,38,2
