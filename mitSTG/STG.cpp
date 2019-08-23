@@ -115,6 +115,7 @@ ShotMover::ShotMover(const Player *player): player(player) {
 	moveFuncTable["option2"] = &ShotMover::option2;
 	moveFuncTable["target"] = &ShotMover::target;
 	moveFuncTable["swirl"] = &ShotMover::swirl;
+	moveFuncTable["evdir"] = &ShotMover::evdir;
 }
 
 void ShotMover::player1(Shot *shot) {
@@ -164,6 +165,18 @@ void ShotMover::swirl(Shot *shot) {
 	shot->moveX(shot->speed * cos(shot->angle));
 	shot->moveY(shot->speed * sin(shot->angle));
 	shot->counter++;
+}
+
+void ShotMover::evdir(Shot *shot) {
+	if(shot->counter == 0) shot->angle = (double)shot->number * 2 * M_PI / 40.0;
+	shot->moveX(shot->speed * cos(shot->angle));
+	shot->moveY(shot->speed * sin(shot->angle));
+	shot->counter++;
+}
+
+int ShotMover::getWayNum(std::string shotPattern) {
+	if(shotPattern == "evdir") return 36;
+	else return 1;
 }
 
 // -------------------------------------------------------------------------------------
@@ -376,6 +389,8 @@ void Enemy::draw() {
 EnemyMover::EnemyMover(): bossBuf(nullptr) {
 	moveFuncTable["straight"] = &EnemyMover::straight;
 	moveFuncTable["straight_down"] = &EnemyMover::straight_down;
+	moveFuncTable["straight_stop"] = &EnemyMover::straight_stop;
+	moveFuncTable["straight_back"] = &EnemyMover::straight_back;
 	moveFuncTable["fuji"] = &EnemyMover::fuji;
 	moveFuncTable["fuji_left"] = &EnemyMover::fuji_left;
 	moveFuncTable["fuji_right"] = &EnemyMover::fuji_right;
@@ -390,13 +405,43 @@ void EnemyMover::straight(Enemy *enemy) {
 }
 
 void EnemyMover::straight_down(Enemy *enemy) {
-	if(enemy->counter < 320) {
+	if(enemy->counter < 330) {
 		enemy->shotFlag = false;
 		enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
 		enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
 	} else {
 		enemy->shotFlag = true;
 		enemy->point.moveY(enemy->speed);
+	}
+	enemy->counter++;
+}
+
+void EnemyMover::straight_stop(Enemy *enemy) {
+	if(enemy->counter < 100) {
+		enemy->shotFlag = false;
+		enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
+		enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	} else if(enemy->counter < 200) {
+		enemy->shotFlag = true;
+	} else {
+		enemy->shotFlag = false;
+		enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
+		enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	}
+	enemy->counter++;
+}
+
+void EnemyMover::straight_back(Enemy *enemy) {
+	if(enemy->counter < 200) {
+		enemy->shotFlag = false;
+		enemy->point.moveX(enemy->speed * cos(enemy->moveAngle));
+		enemy->point.moveY(enemy->speed * sin(enemy->moveAngle));
+	} else if(enemy->counter < 400) {
+		enemy->shotFlag = true;
+	} else {
+		enemy->shotFlag = false;
+		enemy->point.moveX(-enemy->speed * cos(enemy->moveAngle));
+		enemy->point.moveY(-enemy->speed * sin(enemy->moveAngle));
 	}
 	enemy->counter++;
 }

@@ -3,7 +3,7 @@
 Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), playerLowEffectIndex(0), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), playerLockonLazerFlag(false), timeOfLastPShot(-9999), enemCount(0), lifeImg(lifeImg) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), playerLowEffectIndex(0), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), playerLockonLazerFlag(false), timeOfLastPShot(-9999), timeOfLastPLazer(-9999), enemCount(0), lifeImg(lifeImg) {
 	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
@@ -192,7 +192,7 @@ void Game::playerProcessing() {
 	playerKeyProcessing();
 	if(playerInvincibleFlag != -1 && counter - playerInvincibleFlag > 100) playerInvincibleFlag = -1;
 
-	if(player->getSpeed() != playerOriginalSpeed && playerLockons.size() < MAX_PLAYER_LOCKONS && counter - timeOfLastPShot > 80) {
+	if(player->getSpeed() != playerOriginalSpeed && playerLockons.size() < MAX_PLAYER_LOCKONS && counter - timeOfLastPLazer > 60) {
 		for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 			if(std::find_if(playerLockons.begin(), playerLockons.end(), [&](std::pair<Character *, size_t> &ch) { return ch.first == enemyPool[i]; }) != playerLockons.end()) continue;
 			if(enemyPoolFlags[i] && std::pow(enemyPool[i]->getPointPt()->getX() - player->getPointPt()->getX(), 2) + std::pow(enemyPool[i]->getPointPt()->getY() - player->getPointPt()->getY(), 2) < std::pow(180, 2)) {
@@ -245,12 +245,14 @@ void Game::playerShotFlagProcessing() {
 
 	// player options
 	std::vector<Option *> playerOptions = *player->getOptionsPt();
+	bool allocatedPLazerFlag = false;
 	for(const auto &opt: playerOptions) {
 		if(opt->getShotPattern() != "option2" && !checkKeyPShotBt) continue;
 		if(opt->getShotPattern() == "option2" && (!playerLockonLazerFlag || playerLockons.empty())) continue;
-		allocatedPshotFlag = false;
+		if(opt->getShotPattern() != "option2") allocatedPshotFlag = false;
+		else allocatedPLazerFlag = false;
 		for(i = (i == 0) ? i : (i + 1); i < MAX_SHOT_DISP; i++) {
-			if(!playerShotPoolFlags[i] && counter - timeOfLastPShot > opt->getShotInterval()) {
+			if(!playerShotPoolFlags[i] && ((opt->getShotPattern() != "option2" && counter - timeOfLastPShot > opt->getShotInterval()) || (opt->getShotPattern() == "option2" && counter - timeOfLastPLazer > opt->getShotInterval()))) {
 				initPx = opt->getCoordPt()->getX();
 				initPy = opt->getCoordPt()->getY();
 				harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(opt->getShotName())) / 2.0;
@@ -268,13 +270,15 @@ void Game::playerShotFlagProcessing() {
 					playerLockons.pop_front();
 				}
 				playerShotPoolFlags[i] = true;
-				allocatedPshotFlag = true;
+				if(opt->getShotPattern() != "option2") allocatedPshotFlag = true;
+				else allocatedPLazerFlag = true;
 				break;
 			}
 		}
 	}
 	playerLockonLazerFlag = false;
 	if(allocatedPshotFlag) timeOfLastPShot = counter;
+	if(allocatedPLazerFlag) timeOfLastPLazer = counter;
 }
 
 void Game::playerShotMoving() {
@@ -296,28 +300,32 @@ void Game::playerShotMoving() {
 
 void Game::enemyShotFlagProcessing() {
 	// flag on
+	int waynum;
 	Shape *eshotShape;
 	double initEx = 0, initEy = 0, harfshapesize1 = 0, harfshapesize2 = 0;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
 		if(enemyPoolFlags[i] == true && enemyPool[i]->getShotFlag()) {
 			// main enemy
 			size_t j = 0;
-			if(enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
-				for(j = 0; j < MAX_SHOT_DISP; j++) {
-					if(shotPoolFlags[j] == false) {
-						initEx = enemyPool[i]->getPoint().getX();
-						initEy = enemyPool[i]->getPoint().getY();
-						harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
-						harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
-						if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
-							eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
-						} else {
-							eshotShape = new Shape(initEx, initEy, harfshapesize1);
+			waynum = ShotMover::getWayNum(enemyPool[i]->getShotPattern());
+			for(int way = 0; way < waynum; way++) {
+				if(enemyPool[i]->getCounter() % enemyPool[i]->getShotInterval() == 0) {
+					for(j = 0; j < MAX_SHOT_DISP; j++) {
+						if(shotPoolFlags[j] == false) {
+							initEx = enemyPool[i]->getPoint().getX();
+							initEy = enemyPool[i]->getPoint().getY();
+							harfshapesize1 = std::get<CHDB_SHAPE_DATA1>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
+							harfshapesize2 = std::get<CHDB_SHAPE_DATA2>(shotDB.at(enemyPool[i]->getShotName())) / 2.0;
+							if(std::get<CHDB_SHAPE>(shotDB.at(enemyPool[i]->getShotName())) == "rect") {
+								eshotShape = new Shape(initEx - harfshapesize1, initEy - harfshapesize2, initEx + harfshapesize1, initEy + harfshapesize2);
+							} else {
+								eshotShape = new Shape(initEx, initEy, harfshapesize1);
+							}
+							shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())), std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, false, enemyPool[i]->getShotCnt(), nullptr);
+							shotPoolFlags[j] = true;
+							enemyPool[i]->incShotCnt();
+							break;
 						}
-						shotPool[j] = new Shot(enemyPool[i]->getPoint(), enemyPool[i]->getShotSpeed(), enemyPool[i]->getShotPattern(), std::get<CHDB_IMG>(shotDB.at(enemyPool[i]->getShotName())),			std::get<CHDB_ANIM_COUNT>(shotDB.at(enemyPool[i]->getShotName())), eshotShape, 0, false, enemyPool[i]->getShotCnt(), nullptr);
-						shotPoolFlags[j] = true;
-						enemyPool[i]->incShotCnt();
-						break;
 					}
 				}
 			}

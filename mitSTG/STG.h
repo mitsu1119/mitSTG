@@ -85,9 +85,12 @@ private:
 	void option2(Shot *shot);
 	void target(Shot *shot);
 	void swirl(Shot *shot);
+	void evdir(Shot *shot);
 
 public:
 	ShotMover(const Player *player);
+
+	static int getWayNum(std::string shotPattern);
 
 	void operator ()(Shot *shot) {
 		(this->*moveFuncTable[shot->getMovePattern()])(shot);
@@ -215,6 +218,8 @@ private:
 	
 	void straight(Enemy *enemy);
 	void straight_down(Enemy *enemy);
+	void straight_stop(Enemy *enemy);
+	void straight_back(Enemy *enemy);
 	void fuji(Enemy *enemy);
 	void fuji_left(Enemy *enemy);
 	void fuji_right(Enemy *enemy);

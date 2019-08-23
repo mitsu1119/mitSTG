@@ -68,7 +68,7 @@ private:
 	size_t playerLowEffectIndex;
 	bool playerLockonLazerFlag;
 	std::deque<std::pair<Character *, size_t>> playerLockons;
-	int timeOfLastPShot;
+	int timeOfLastPShot, timeOfLastPLazer;
 	
 	std::vector<Effect *> effectPool;
 	std::vector<bool> effectPoolFlags;
