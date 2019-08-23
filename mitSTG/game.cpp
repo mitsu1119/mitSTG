@@ -288,8 +288,7 @@ void Game::playerShotMoving() {
 			harfY = int(playerShotPool[i]->getImageSize().getY() / 2.0);
 			if(pt->getX() + harfX < leftX -100 || pt->getX() - harfX > rightX + 100 || pt->getY() + harfY < topY - 100 || pt->getY() - harfY > bottomY + 100) {
 				destroyPshotPool(i);
-			}
-			if(playerShotPool[i]->isLazer() && playerShotPool[i]->lazerDestroyableFlag()) destroyPshotPool(i);
+			} else if(playerShotPool[i]->isLazer() && playerShotPool[i]->lazerDestroyableFlag()) destroyPshotPool(i);
 		}
 	}
 }

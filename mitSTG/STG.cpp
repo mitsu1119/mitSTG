@@ -69,10 +69,35 @@ int Shot::getPower() const {
 
 void Shot::draw() {
 	if(lazerFlag) {
-		DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
-		for(auto i: tracing) {
-			DrawGraph((int)i.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)i.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		double harfX = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0;
+		double harfY = image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0;
+		double ang = angle + M_PI / 2.0;
+		double r;
+		Point rd, ld, ru, lu;
+		Point p01, p02;
+
+		if(tracing.size() > 0) {
+			ru.setX(tracing[0].getX() + harfX);
+			ru.setY(tracing[0].getY());
+			lu.setX(tracing[0].getX() - harfX);
+			lu.setY(tracing[0].getY());
+			for(int i = 0; i < (int)tracing.size() - 1; i++) {
+				p01 = tracing[i];
+				p02 = tracing[i + 1];
+				r = atan2(p01.getY() - p02.getY(), p01.getX() - p02.getX());
+				rd.setX(p02.getX() + harfX * cos(r + M_PI / 2.0));
+				rd.setY(p02.getY()+ harfX * sin(r + M_PI / 2.0));
+				ld.setX(p02.getX() + harfX * cos(r - M_PI / 2.0));
+				ld.setY(p02.getY() + harfX * sin(r - M_PI / 2.0));
+				DrawModiGraphF(lu.getX(), lu.getY(), ru.getX(), ru.getY(), rd.getX(), rd.getY(), ld.getX(), ld.getY(), image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+				lu = ld;
+				ru = rd;
+			}
 		}
+		// DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+/*		for(auto i: tracing) {
+			DrawGraph((int)i.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)i.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		} */
 		if(lazerState == 2) {
 			tracing.pop_front();
 			if(tracing.empty()) lazerState = 3;
