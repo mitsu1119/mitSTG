@@ -1,6 +1,6 @@
-#imageName,shotName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)"
-Rocket,rocket.png,1,1,rect,4,12
-Varistor,varistor.png,1,1,rect,3,8
-Plazer,plazer.png,1,1,rect,5,8
-Bowling,bowling.png,2,3,circle,12,12
-Blue,blue.png,1,1,circle,13,13
+#imageName,shotName,animationDivNum,animationCount,shape,"shapeData1(rect: sizeX, circle: diameter)","shapeData2(rect: sizeY, circle: null)",shotPower(for player)
+Rocket,rocket.png,1,1,rect,4,12,0
+Varistor,varistor.png,1,1,rect,3,8,1
+Plazer,plazer.png,1,1,rect,5,8,10
+Bowling,bowling.png,2,3,circle,12,12,0
+Blue,blue.png,1,1,circle,13,13,0

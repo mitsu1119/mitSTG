@@ -49,6 +49,9 @@ constexpr size_t MAX_SHOT_DISP = 500;
 constexpr size_t MAX_PLAYER_LOCKONS = 5;
 class Game : public Scene {
 private:
+	bool appearAllEnemyFlag;
+	bool nonEnemyOnDisplay;
+
 	Player *player;
 	int playerInvincibleFlag;			// Invincible mode start time. If player is not invinceble, this value is -1.
 	double playerOriginalSpeed;

@@ -3,7 +3,7 @@
 Scene::Scene(): counter(0), backGround(nullptr) {
 }
 
-Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), playerLowEffectIndex(0), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), playerLockonLazerFlag(false), timeOfLastPShot(-9999), timeOfLastPLazer(-9999), enemCount(0), lifeImg(lifeImg) {
+Game::Game(Player *player, const char *stagePath, const CharDataBase &enemyDB, const CharDataBase &shotDB, const EffectDataBase &effectDB, const OptionDataBase &optionDB, int leftX, int topY, int rightX, int bottomY, const IMG *lifeImg): appearAllEnemyFlag(false), nonEnemyOnDisplay(true), player(player), playerInvincibleFlag(-1), playerOriginalSpeed(player->getSpeed()), playerNonDrawFlag(false), playerLowEffectIndex(0), enemDB(enemyDB), shotDB(shotDB), effectDB(effectDB), optionDB(optionDB), leftX(leftX), rightX(rightX), topY(topY), bottomY(bottomY), keyDirection(CENTER), checkKeyPShotBt(false), checkKeyLowPlayer(false), playerLockonLazerFlag(false), timeOfLastPShot(-9999), timeOfLastPLazer(-9999), enemCount(0), lifeImg(lifeImg) {
 	counter = 0;
 	effectPool = std::vector<Effect *>(MAX_EFFECT_DISP, nullptr);
 	effectPoolFlags = std::vector<bool>(MAX_EFFECT_DISP, false);
@@ -110,6 +110,7 @@ size_t Game::searchAddableEffectPool() const {
 
 StagePart Game::getNextEnemyData() {
 	enemCount++;
+	if(enemCount == stage.size()) appearAllEnemyFlag = true;
 	return stage[enemCount - 1];
 }
 
@@ -375,8 +376,12 @@ void Game::enemyShotMoving() {
 
 void Game::enemyMoving() {
 	// move
+	nonEnemyOnDisplay = true;
 	for(size_t i = 0; i < MAX_ENEMY_DISP; i++) {
-		if(enemyPoolFlags[i]) emover->operator()(enemyPool[i]);
+		if(enemyPoolFlags[i]) {
+			emover->operator()(enemyPool[i]);
+			nonEnemyOnDisplay = false;
+		}
 	}
 }
 
@@ -595,7 +600,10 @@ int Game::update() {
 	bgProcessing();
 	animationProcessing();
 
-	if(player->damaged(0) == 0) return -1;
+	if(player->damaged(0) == 0 || (appearAllEnemyFlag && nonEnemyOnDisplay)) {
+		player->setSpeed(playerOriginalSpeed);
+		return -1;
+	}
 
 	return 0;
 }
@@ -705,7 +713,11 @@ MitSTG::MitSTG() {
 
 	loading();
 
-	GetClientRect(GetMainWindowHandle(), &wndArea);
+	// GetClientRect(GetMainWindowHandle(), &wndArea);
+	wndArea.left = 0;
+	wndArea.right = 540;
+	wndArea.top = 0;
+	wndArea.bottom = 780;
 	Point WndCenter(((double)wndArea.right - (double)wndArea.left) / 2.0, ((double)wndArea.bottom - (double)wndArea.top) / 2.0);
 
 	// Create player datas.
@@ -726,7 +738,7 @@ MitSTG::MitSTG() {
 	// Create other datas.
 	lifeImg = new IMG("dat\\image\\system\\life.png");
 
-	changeScene(SCENE_GAME_1);
+	changeScene(SCENE_TITLE);
 }
 
 MitSTG::~MitSTG() {
@@ -862,7 +874,7 @@ int MitSTG::loading() {
 		shapeDataBuf = std::stod(parsed[6]);
 		std::get<CHDB_SHAPE_DATA2>(shots[parsed[0]]) = shapeDataBuf;
 
-		std::get<CHDB_HP_OR_POWER>(shots[parsed[0]]) = 1;
+		std::get<CHDB_HP_OR_POWER>(shots[parsed[0]]) = std::stoi(parsed[7]);
 
 		delete[] loadDivHandles;
 	}
@@ -900,6 +912,7 @@ void MitSTG::changeScene(SceneType scene) {
 		break;
 	case SCENE_GAME_1:
 		if(nowScene != nullptr) delete nowScene;
+		player->setCoord(initPx, initPy);
 		nowScene = new Game(player, "dat\\stage\\stage1.csv", enemys, shots, effects, options, 0, 0, wndArea.right, wndArea.bottom, lifeImg);
 		break;
 	case SCENE_GAMEOVER:
