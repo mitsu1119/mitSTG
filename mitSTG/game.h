@@ -33,9 +33,9 @@ enum CharDBAccessor {
 	CHDB_IMG, CHDB_ANIM_COUNT, CHDB_SHAPE, CHDB_SHAPE_DATA1, CHDB_SHAPE_DATA2, CHDB_HP_OR_POWER
 };
 
-typedef std::unordered_map<std::string, std::vector<std::tuple<std::vector<const IMG *>, unsigned long, int, int, std::string, std::string, double, int>>> OptionDataBase;
+typedef std::unordered_map<std::string, std::vector<std::tuple<std::vector<const IMG *>, unsigned long, int, int, std::string, std::string, double, double, int>>> OptionDataBase;
 enum OptionDBAccessor {
-	OPDB_IMG, OPDB_ANIM_COUNT, OPDB_X, OPDB_Y, OPDB_SHOTNAME, OPDB_SHOTTYPE, OPDB_SHOTSPEED, OPDB_SHOTINTERVAL
+	OPDB_IMG, OPDB_ANIM_COUNT, OPDB_X, OPDB_Y, OPDB_SHOTNAME, OPDB_SHOTTYPE, OPDB_SHOTSPEED, OPDB_SHOTANGLE, OPDB_SHOTINTERVAL
 };
 
 typedef std::unordered_map<std::string, std::tuple<std::vector<const IMG *>, unsigned long>> EffectDataBase;

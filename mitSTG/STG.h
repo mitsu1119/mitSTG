@@ -13,10 +13,10 @@
 
 // -------------------------------------------------------- Stage -------------------------------------------------------------------
 // stage[0][STG_ENEMYIMG] => 1th enemy's image
-typedef std::tuple<std::string, double, double, int, std::string, double, double, std::string, std::string, double, int> StagePart;
+typedef std::tuple<std::string, double, double, int, std::string, double, double, std::string, std::string, double, double, int> StagePart;
 typedef std::vector<StagePart> Stage;
 enum StageAccessing {
-	STA_ENEMYNAME, STA_INITPX, STA_INITPY, STA_TIMING, STA_MOVEPATTERN, STA_MOVESPEED, STA_MOVEANGLE, STA_SHOTNAME, STA_SHOTPATTERN, STA_SHOTSPEED, STA_SHOTINTERVAL
+	STA_ENEMYNAME, STA_INITPX, STA_INITPY, STA_TIMING, STA_MOVEPATTERN, STA_MOVESPEED, STA_MOVEANGLE, STA_SHOTNAME, STA_SHOTPATTERN, STA_SHOTSPEED, STA_SHOTANGLE, STA_SHOTINTERVAL
 };
 // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ private:
 public:
 	// power: For player shot.
 	// number, target: For enemy shot.
-	Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, bool isLazer = false, int number = 0, Character *target = nullptr);
+	Shot(Point point, double speed, std::string movePattern, double angle, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power = 0, bool isLazer = false, int number = 0, Character *target = nullptr);
 
 	void setNullTarget();
 	void incLazerState();
@@ -91,6 +91,7 @@ private:
 	void swirl(Shot *shot);
 	void evdir(Shot *shot);
 	void random(Shot *shot);
+	void straight(Shot *shot);
 
 public:
 	ShotMover(const Player *player);
@@ -115,17 +116,18 @@ private:
 	unsigned long animationCount;
 
 	std::string shotName, shotPattern;
-	double shotSpeed;
+	double shotAngle, shotSpeed;
 	int shotInterval, shotCnt;
 	
 	int counter;
 
 public:
-	Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval);
+	Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, double shotAngle, int shotInterval);
 
 	const Point *getCoordPt() const;
 	std::string getShotName() const;
 	std::string getShotPattern() const;
+	double getShotAngle() const;
 	double getShotSpeed() const;
 	int getShotInterval() const;
 	int getShotCnt() const;
@@ -202,14 +204,15 @@ private:
 	bool shotFlag;
 	
 	std::string movePattern;
-	double moveAngle;
+	double moveAngle, shotAngle;
 
 public:
-	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotImage, int HP, std::vector<Option *> options);
+	Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, double shotAngle, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotImage, int HP, std::vector<Option *> options);
 
 	void incShotCnt();
 	virtual void draw();
 
+	double getShotAngle() const;
 	int getShotCnt() const;
 	bool getShotFlag() const;
 };

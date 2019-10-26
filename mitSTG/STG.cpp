@@ -1,7 +1,7 @@
 #include "STG.h"
 
 // ------------------------ Shot class -------------------------------------------------
-Shot::Shot(Point point, double speed, std::string movePattern, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, bool isLazer, int number, Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(0.0), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target), lazerFlag(isLazer) {
+Shot::Shot(Point point, double speed, std::string movePattern, double angle, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, int power, bool isLazer, int number, Character *target): point(point), shape(shape), speed(speed), movePattern(movePattern), image(image), angle(angle), counter(0), number(number), animationNum(image.size()), animationCount(animationCount), damagePower(power), target(target), lazerFlag(isLazer) {
 	if(lazerFlag) {
 		tracingSize = 10;
 		lazerState = 1;
@@ -103,7 +103,8 @@ void Shot::draw() {
 			if(tracing.empty()) lazerState = 3;
 		}
 	} else {
-		DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		DrawRotaGraph((int)point.getX(), (int)point.getY(), 1.0, angle + M_PI / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
+		// DrawGraph((int)point.getX() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeX() / 2.0, (int)point.getY() - image[(counter % (animationNum * animationCount)) / animationCount]->getSizeY() / 2.0, image[(counter % (animationNum * animationCount)) / animationCount]->getHandle(), true);
 	}
 }
 // -------------------------------------------------------------------------------------
@@ -120,6 +121,7 @@ ShotMover::ShotMover(const Player *player): player(player) {
 	moveFuncTable["swirl"] = &ShotMover::swirl;
 	moveFuncTable["evdir"] = &ShotMover::evdir;
 	moveFuncTable["random"] = &ShotMover::random;
+	moveFuncTable["straight"] = &ShotMover::straight;
 }
 
 void ShotMover::player1(Shot *shot) {
@@ -185,6 +187,13 @@ void ShotMover::random(Shot *shot) {
 	shot->counter++;
 }
 
+void ShotMover::straight(Shot *shot) {
+	if(shot->counter == 0) shot->angle = M_PI * shot->angle / 180;
+	shot->moveX(shot->speed * cos(shot->angle));
+	shot->moveY(shot->speed *sin(shot->angle));
+	shot->counter++;
+}
+
 int ShotMover::getWayNum(std::string shotPattern) {
 	if(shotPattern == "evdir") return 36;
 	else return 1;
@@ -193,7 +202,7 @@ int ShotMover::getWayNum(std::string shotPattern) {
 // -------------------------------------------------------------------------------------
 
 // ------------------------- Option class ---------------------------------------------------------------------------
-Option::Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, int shotInterval): point(p), coord(Point(0, 0)), image(image), animationCount(animationCount), shotPattern(shotPattern), shotName(shotName), shotSpeed(shotSpeed), shotInterval(shotInterval), animationNum(image.size()), counter(0), shotCnt(0) {
+Option::Option(Point p, std::vector<const IMG *> image, unsigned long animationCount, std::string shotName, std::string shotPattern, double shotSpeed, double shotAngle, int shotInterval): point(p), coord(Point(0, 0)), image(image), animationCount(animationCount), shotPattern(shotPattern), shotName(shotName), shotAngle(shotAngle), shotSpeed(shotSpeed), shotInterval(shotInterval), animationNum(image.size()), counter(0), shotCnt(0) {
 	update(0, 0);
 }
 
@@ -217,6 +226,10 @@ std::string Option::getShotName() const {
 
 std::string Option::getShotPattern() const {
 	return shotPattern;
+}
+
+double Option::getShotAngle() const {
+	return shotAngle;
 }
 
 double Option::getShotSpeed() const {
@@ -374,11 +387,15 @@ void Player::draw() {
 // -------------------------------------------------------------------------------------
 
 // -------------------------- Enemy class --------------------------------------------
-Enemy::Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP, options), movePattern(movePattern), moveAngle(moveAngle), shotCnt(0), shotFlag(true) {
+Enemy::Enemy(double initPx, double initPy, std::string movePattern, double speed, double moveAngle, std::string shotPattern, double shotSpeed, double shotAngle, int shotInterval, std::vector<const IMG *> image, unsigned long animationCount, Shape *shape, std::string shotName, int HP, std::vector<Option *> options): Character(Point(initPx, initPy), speed, shotPattern, shotSpeed, shotInterval, image, animationCount, shape, shotName, HP, options), movePattern(movePattern), moveAngle(moveAngle), shotAngle(shotAngle), shotCnt(0), shotFlag(true) {
 }
 
 void Enemy::incShotCnt() {
 	shotCnt++;
+}
+
+double Enemy::getShotAngle() const {
+	return shotAngle;
 }
 
 int Enemy::getShotCnt() const {
